@@ -1,32 +1,5 @@
-import { ApolloServer } from "apollo-server";
-import dotenv from "dotenv";
-import "reflect-metadata";
-import { buildSchema } from "type-graphql";
-import resolvers from "./resolvers";
+import express from "express";
 
-dotenv.config();
+const app = express();
 
-const startServer = async () => {
-  const schema = await buildSchema({
-    resolvers,
-    validate: false,
-  } as any);
-  const server = new ApolloServer({
-    schema,
-    context: async () => {
-      return {};
-    },
-    cors: {
-      origin: ["http://localhost:3000"],
-      credentials: true,
-    },
-    subscriptions: {
-      path: "/",
-    },
-  });
-  server.listen(9000).then(({ url }) => {
-    console.log(`🚀  Server ready at ${url}`);
-  });
-};
-
-startServer();
+app.listen(3000, () => console.log("Listening on port 3000!"));
