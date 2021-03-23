@@ -1,5 +1,11 @@
 import express from "express";
+import * as dotenv from "dotenv";
+dotenv.config();
+import client from "./postgres";
 
 const app = express();
 
-app.listen(3000, () => console.log("Listening on port 3000!"));
+client.connect().then(() => {
+  console.log("Connected to database");
+  app.listen(3000, () => console.log("Listening on port 3000!"));
+});
