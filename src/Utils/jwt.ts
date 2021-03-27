@@ -6,4 +6,8 @@ function jwtToken(user_id: any) {
     return jwt.sign({id: user_id}, process.env.jwtSecret)
 }
 
-export default jwtToken;
+function jwtDecode(token: any) {
+    return jwt.decode(token)
+}
+
+export {jwtToken, jwtDecode};
