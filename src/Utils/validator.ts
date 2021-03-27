@@ -24,8 +24,10 @@ function isValid(req: any, res: any, next: any) {
             return res.status(406).send("Invalid Email");
         }
     } else if (req.path === "/api/editaccount") {
-        if ((password.toLowerCase().includes('password')) || password.length < 5) {
-            return res.status(406).send("Enter strong password");
+        if(password){
+            if ((password.toLowerCase().includes('password')) || password.length < 5) {
+                return res.status(406).send("Enter strong password");
+            }
         }
     }
 

@@ -57,24 +57,29 @@ router.post('/api/signin', validate, async (req, res) => {
 });
 
 router.patch('/api/editaccount', validate, async (req, res) => {
-    const {name, password} = req.body;
+    const {jwttoken, name, password} = req.body;
 
-    const a = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ5NzUwMWRjLWZjMjMtNDYxMC05Mzk5LTU2NGE3M2UzMGEyOSIsImlhdCI6MTYxNjgxNTkyNX0.8pa69Xulualo2x2Z9MM8gWEzJG8dl4gQeZK4t3545Bc";
+    //const a = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQ5NzUwMWRjLWZjMjMtNDYxMC05Mzk5LTU2NGE3M2UzMGEyOSIsImlhdCI6MTYxNjgxNTkyNX0.8pa69Xulualo2x2Z9MM8gWEzJG8dl4gQeZK4t3545Bc";
     try {
+        if(!jwttoken){
+            return res.status(401).send("Bad Request")
+        }
+
         if(name && password){
-            await client.query("update users set user_name=$1 where user_id = $2", [name, jwtDecode(a).id]);
+            await client.query("update users set user_name=$1 where user_id = $2", [name, jwtDecode(jwttoken).id]);
             const bcryptPassword = await bcrypt.hash(password, 10);
-            await client.query("update users set user_password=$1 where user_id=$2", [bcryptPassword, jwtDecode(a).id]);
+            await client.query("update users set user_password=$1 where user_id=$2", [bcryptPassword, jwtDecode(jwttoken).id]);
             return res.status(201).send("Profile name and Password Updated")
         }
         else if(name){
-            await client.query("update users set user_name=$1 where user_id = $2", [name, jwtDecode(a).id]);
+            await client.query("update users set user_name=$1 where user_id = $2", [name, jwtDecode(jwttoken).id]);
             return res.status(201).send("Profile name updated")
         } else if (password) {
             const bcryptPassword = await bcrypt.hash(password, 10);
-            await client.query("update users set user_password=$1 where user_id=$2", [bcryptPassword, jwtDecode(a).id]);
+            await client.query("update users set user_password=$1 where user_id=$2", [bcryptPassword, jwtDecode(jwttoken).id]);
             return res.status(201).send("Password Updated")
         }
+
         return res.status(401).send("Bad Request")
     } catch (e) {
         console.log(e)
