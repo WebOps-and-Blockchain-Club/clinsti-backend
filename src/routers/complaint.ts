@@ -25,11 +25,19 @@ router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
 
     let filenames = new Array<string>()
     
+    // extract filenames of stored images
     files.forEach((file : {filename: string}) => {
         filenames.push(file.filename);
     })
 
-    let removefile = (filename : string) =>{fs.unlink('./images/'+filename, ()=>{})}
+    // function to remove an image from ./images
+    let removefile = (filename : string) =>{
+        try{
+            fs.unlink('./images/'+filename, ()=>{})
+        } catch (e){
+            console.log(e)
+        }
+    }
 
     if (!description || !jwtToken || !location){
         filenames.forEach(removefile)
@@ -46,15 +54,17 @@ router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
         userId = jwtDecode(jwtToken);
     }
     if(!userId) {
-        filenames.forEach
+        filenames.forEach(removefile)
         return res.status(400).send("bad token")
     }
 
     let createdTime = new Date().toISOString()
-    let imageQuery = filenames.length>0 ? `'{"${filenames.join('","')}"}'`: 'null'
+    
+    // image filename array value to be inserted
+    let imagefilenames = filenames.length>0 ? `'{"${filenames.join('","')}"}'`: 'null'
     
     try {
-        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${userId}','${description}','${location}','posted','${createdTime}',${imageQuery})`)
+        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${userId}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
         console.log(e)
