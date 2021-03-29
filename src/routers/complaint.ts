@@ -4,10 +4,15 @@ import client from '../../postgres';
 import { jwtDecode } from '../Utils/jwt';
 import fs from 'fs'
 
+const imageDirectory = './images/'
+
 var storage = multer.diskStorage({
-    destination: './images/',
+    destination: imageDirectory,
     filename: function(_req,file,cb) {
-        const filename = Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + file['mimetype'].split('/')[1]
+        var filename = Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + file['mimetype'].split('/')[1]
+        while (fs.existsSync(imageDirectory + filename)){
+            filename = Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + file['mimetype'].split('/')[1]
+        }
         cb(null, filename)
     }
 })
