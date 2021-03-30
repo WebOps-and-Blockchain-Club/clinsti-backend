@@ -23,10 +23,9 @@ const router = express.Router();
 
 router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
     // reverting type errors
-    const body = JSON.parse(JSON.stringify(req.body));
     const files = JSON.parse(JSON.stringify(req.files))
 
-    const {description, jwtToken, location} = body
+    const {description, jwtToken, location} = req.body
 
     let filenames = new Array<string>()
     
@@ -38,7 +37,7 @@ router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
     // function to remove an image from ./images
     let removefile = (filename : string) =>{
         try{
-            fs.unlink('./images/'+filename, ()=>{})
+            fs.unlink(imageDirectory+filename, ()=>{})
         } catch (e){
             console.log(e)
         }
