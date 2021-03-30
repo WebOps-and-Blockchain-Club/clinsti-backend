@@ -1,4 +1,5 @@
 import validator from "validator";
+import fileManager from './file';
 
 function isValid(req: any, res: any, next: any) {
     const {name, email, password} = req.body;
@@ -32,6 +33,23 @@ function isValid(req: any, res: any, next: any) {
     } else if(req.path === "/api/feedback"){
         if(!req.body.feedback || req.body.feedback.length < 10){
             return res.status(406).send("Please write few more word.");
+        }
+    } else if(req.path === "/api/complaint") {
+        // Validates complaint resource queries
+
+        if (req.method === "POST"){
+            const {description, location} = req.body
+            if (!description || !location){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
+                return res.status(400).send("Bad Request: Description or Location is empty")
+            }
+            if (!validator.isLength(description,{min:5})){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
+                return res.status(400).send("Description should be minimum length 5")
+            } else if (!validator.isLength(location,{min: 5})){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
+                return res.status(400).send("Location should be minimum length  5")
+            }
         }
     }
 

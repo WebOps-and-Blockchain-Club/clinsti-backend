@@ -2,17 +2,14 @@ import express from 'express';
 import multer from 'multer';
 import client from '../../postgres';
 import { jwtDecode } from '../Utils/jwt';
-import fs from 'fs'
-
-const imageDirectory = './images/'
+import validate from '../Utils/validator'
+import fileManager from '../Utils/file'
 
 var storage = multer.diskStorage({
-    destination: imageDirectory,
+    destination: fileManager.imageDirectory,
     filename: function(_req,file,cb) {
-        var filename = Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + file['mimetype'].split('/')[1]
-        while (fs.existsSync(imageDirectory + filename)){
-            filename = Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + file['mimetype'].split('/')[1]
-        }
+        const filetype = file['mimetype'].split('/')[1]
+        const filename = fileManager.createFilename(filetype)
         cb(null, filename)
     }
 })
@@ -21,30 +18,15 @@ var upload = multer({storage: storage});
 
 const router = express.Router();
 
-router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
-    // reverting type errors
-    const files = JSON.parse(JSON.stringify(req.files))
+router.post('/api/complaint',upload.array('images',10), validate,async (req, res) =>{
+    
 
     const {description, jwtToken, location} = req.body
 
-    let filenames = new Array<string>()
-    
-    // extract filenames of stored images
-    files.forEach((file : {filename: string}) => {
-        filenames.push(file.filename);
-    })
+    const filenames = fileManager.extractFilenames(req)
 
-    // function to remove an image from ./images
-    let removefile = (filename : string) =>{
-        try{
-            fs.unlink(imageDirectory+filename, ()=>{})
-        } catch (e){
-            console.log(e)
-        }
-    }
-
-    if (!description || !jwtToken || !location){
-        filenames.forEach(removefile)
+    if (!jwtToken){
+        fileManager.deleteFiles(filenames)
         return res.status(400).send("bad Request")
     }
 
@@ -58,7 +40,7 @@ router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
         userId = jwtDecode(jwtToken);
     }
     if(!userId) {
-        filenames.forEach(removefile)
+        fileManager.deleteFiles(filenames)
         return res.status(400).send("bad token")
     }
 
@@ -72,7 +54,7 @@ router.post('/api/complaint', upload.array('images',10),async (req, res) =>{
     } catch (e)
     {
         console.log(e)
-        filenames.forEach(removefile)
+        fileManager.deleteFiles(filenames)
         return res.status(400).send(e)
     }
     
