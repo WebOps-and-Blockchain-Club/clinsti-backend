@@ -20,12 +20,23 @@ const router = express.Router();
 
 router.post('/api/complaints',upload.array('images',10), validate,async (req, res) =>{
     
-
-    const {description, jwtToken, location} = req.body
+    const {description, location} = req.body
+    //const {description, jwtToken, location} = req.body
 
     const filenames = fileManager.extractFilenames(req)
 
-    const {id:userId, error} = await jwtDecode(jwtToken)
+    //const {id:userId, error} = await jwtDecode(jwtToken)
+    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
+
+    if(!jwttoken) {
+        return res.status(401).send("Please Login")
+    }
+    
+    const {id:userId, error} = await jwtDecode(jwttoken)
+    if(error) {
+        return res.status(401).send(error)
+    }
+
 
     if(error) {
         fileManager.deleteFiles(filenames)
@@ -49,15 +60,59 @@ router.post('/api/complaints',upload.array('images',10), validate,async (req, re
     return res.status(201).send()
 })
 
+router.get('/api/getcomplaints/:complaintId', async (req, res) => {
+
+    const complaintId = req.params.complaintId;
+
+    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
+
+    if(!jwttoken) {
+        return res.status(401).send("Please Login")
+    }
+    
+    const {id:userid, error} = await jwtDecode(jwttoken)
+    if(error) {
+        return res.status(401).send(error)
+    }
+
+    try {
+        client.query(
+            'select * from complaints where user_id = $1 and complaint_id = $2',
+            [userid, complaintId],
+            (error, results) => {
+                if (error) {
+                    throw error;
+                }
+                const {complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark} = results.rows[0];
+                return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark})
+            }
+        );
+        return null;
+    } catch (e) {
+        return res.status(500).send(e.detail)
+    }
+
+})
+
 router.post('/api/complaints/:complaintId',validate,async (req, res)=>{
 
     const complaintId = req.params.complaintId
-    const {fbRating,jwtToken, fbRemark} = req.body
+    const {fbRating, fbRemark} = req.body
 
-    var {id:userId, error} = await jwtDecode(jwtToken)
+    // var {id:userId, error} = await jwtDecode(jwtToken)
 
-    if(error){
-        res.status(400).send(error)
+    // if(error){
+    //     res.status(400).send(error)
+    // }
+    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
+
+    if(!jwttoken) {
+        return res.status(401).send("Please Login")
+    }
+    
+    const {id:userId, error} = await jwtDecode(jwttoken)
+    if(error) {
+        return res.status(401).send(error)
     }
 
     try {

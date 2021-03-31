@@ -84,7 +84,7 @@ router.get('/api/user/me', async (req, res) => {
         return null;
 
     } catch (e) {
-        return res.status(500).send("e.detail")
+        return res.status(500).send(e.detail)
     }
 })
 
