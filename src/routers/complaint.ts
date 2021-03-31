@@ -83,8 +83,11 @@ router.get('/api/getcomplaints/:complaintId', async (req, res) => {
                 if (error) {
                     throw error;
                 }
-                const {complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark} = results.rows[0];
-                return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark})
+                if(results.rowCount === 1) {
+                    const {complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark} = results.rows[0];
+                    return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark})
+                }
+                return res.status(400).send('Bad Request');
             }
         );
         return null;
