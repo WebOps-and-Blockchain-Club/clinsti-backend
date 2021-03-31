@@ -53,9 +53,8 @@ router.post('/api/complaint',upload.array('images',10), validate,async (req, res
         await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${userId}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
-        console.log(e)
         fileManager.deleteFiles(filenames)
-        return res.status(400).send(e)
+        return res.status(500).send(e.detail)
     }
     
     
