@@ -4,13 +4,12 @@ import validate from "../Utils/validator";
 const router = express.Router();
 
 router.post('/api/feedback', validate, async (req, res) => {
-    const {feedback} = req.body
+    const {feedback,feedback_type} = req.body
     
     try {
-        await client.query('insert into feedback(feedback) values($1)', [feedback]);
+        await client.query(`insert into feedback(feedback,feedback_type) values( '${feedback}' , '${feedback_type}')`);
         return res.status(201).send("Thanks for feedback");
     } catch (e) {
-        //console.log('Error: ' + e)
         return res.status(500).send(e.detail)
     }
 });
