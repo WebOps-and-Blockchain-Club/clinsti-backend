@@ -54,6 +54,40 @@ router.post('/api/signin', validate, async (req, res) => {
     }
 });
 
+router.get('/api/user/me', async (req, res) => {
+
+    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
+
+    if(!jwttoken) {
+        return res.status(401).send("Please Login")
+    }
+    
+    const {id:userid, error} = await jwtDecode(jwttoken)
+    if(error) {
+        return res.status(401).send(error)
+    }
+
+    try {
+        client.query(
+            'select * from users where user_id = $1',
+            [userid],
+            (error, results) => {
+                if(error) {
+                    throw error;
+                }
+            const name = results.rows[0].user_name;
+            const email = results.rows[0].user_email
+            return res.status(200).send({name , email});
+            }
+        );
+
+        return null;
+
+    } catch (e) {
+        return res.status(500).send("e.detail")
+    }
+})
+
 router.patch('/api/editprofile', validate, async (req, res) => {
 
     const updatekeys = Object.keys(req.body);
@@ -65,6 +99,7 @@ router.patch('/api/editprofile', validate, async (req, res) => {
     if(!jwttoken) {
         return res.status(401).send("Please Login")
     }
+
     const {id:userid, error} = await jwtDecode(jwttoken)
     if(error) {
         return res.status(401).send(error)
@@ -82,9 +117,18 @@ router.patch('/api/editprofile', validate, async (req, res) => {
             }
             
             const str = 'update users set ' + updatekey + ' = $1 where user_id = $2';
-            await client.query(str,[req.body[updatekey], userid]);
+            client.query(
+                str,
+                [req.body[updatekey], userid],
+                (error, results) => {
+                    if(error) {
+                        throw error;
+                    }
+                    return results; 
+                }
+            );
         });
-        return res.send('Profile Updated')
+        return res.status(200).send('Profile Updated');
     } catch (e) {
         return res.status(500).send(e.detail)
     }
