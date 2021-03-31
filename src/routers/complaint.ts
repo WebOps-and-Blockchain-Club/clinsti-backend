@@ -61,15 +61,19 @@ router.post('/api/complaints/:complaintId',validate,async (req, res)=>{
     }
 
     try {
-        const queryResult = await client.query(`select user_id from complaints where complaint_id=${complaintId}`)
+        const queryResult = await client.query(`select user_id,feedback_rating from complaints where complaint_id=${complaintId}`)
         if (!queryResult.rows[0]){
             return res.status(404).send()
         }
 
         const complaintUserId = queryResult.rows[0].user_id
-        console.log(complaintUserId, userId)
+        
         if (complaintUserId === userId){
-            console.log(fbRating,fbRemark)
+            if (queryResult.rows[0].feedback_rating){
+                return res.status(403).send("Feedback already submitted")
+            }
+            const fbRemarkQuerySnippet = fbRemark ? `'${fbRemark}'` : 'null';
+            await client.query(`update complaints set feedback_rating ='${fbRating}' , feedback_remark=${fbRemarkQuerySnippet} where complaint_id=${complaintId}`)
             return res.status(202).send()
         }
         else{
