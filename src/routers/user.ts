@@ -47,7 +47,8 @@ router.post('/api/signin', validate, async (req, res) => {
 
         const userjwtToken = jwtToken(user.rows[0].user_id);
         const name = user.rows[0].user_name
-        return res.status(201).send({name, userjwtToken});
+
+        return res.status(200).send({name, userjwtToken});
     } catch (e) {
         return res.status(500).send(e.detail)
     }
@@ -59,7 +60,8 @@ router.patch('/api/editprofile', validate, async (req, res) => {
     const allowedkeyupdates = ['user_name', 'user_password'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
 
-    const jwttoken = req.headers['token']?.toString();
+    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
+    
     if(!jwttoken) {
         return res.status(401).send("Please Login")
     }
@@ -73,7 +75,6 @@ router.patch('/api/editprofile', validate, async (req, res) => {
     }
 
     try {
-        console.log('First')
         updatekeys.forEach(async (updatekey) => {
 
             if(updatekey === 'user_password') {
