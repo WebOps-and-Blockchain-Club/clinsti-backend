@@ -71,6 +71,11 @@ router.patch('/api/editprofile', validate, async (req, res) => {
 
     try {
         updatekeys.forEach(async (updatekey) => {
+
+            if(updatekey === 'user_password') {
+                req.body[updatekey] = await bcrypt.hash(req.body[updatekey], 10);
+            }
+            
             const str = 'update users set ' + updatekey + ' = $1 where user_id = $2';
             await client.query(str,[req.body[updatekey], userid]);
         });
