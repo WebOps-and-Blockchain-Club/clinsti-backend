@@ -7,5 +7,7 @@ create table complaints(
 	created_time timestamp with time zone not null,
 	completed_time timestamp with time zone,
 	images text[],
-	foreign key (user_id) references users(user_id)
+	foreign key (user_id) references users(user_id),
+	feedback_rating int check(feedback_rating between 1 and 5),
+	feedback_remark text
 );
