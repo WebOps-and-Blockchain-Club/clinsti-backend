@@ -8,6 +8,12 @@ function jwtToken(user_id: String) {
 }
 
 async function jwtDecode(token: String) {
+
+    if(token == "test"){
+        // TO BE DELETED, ONLY FOR TESTING , #TBD
+        return {id: "90c1a25f-9849-4e11-b0a7-494c3ffca6ec",error: undefined}
+    }
+
     try {
         const decoded = jwt.verify(token, process.env.jwtSecret)
         if (await client.query('select * from users where user_id = $1', [decoded._id])){
