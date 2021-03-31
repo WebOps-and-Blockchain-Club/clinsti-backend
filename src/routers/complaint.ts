@@ -4,6 +4,7 @@ import client from '../../postgres';
 import { jwtDecode } from '../Utils/jwt';
 import validate from '../Utils/validator'
 import fileManager from '../Utils/file'
+import userID from '../middleware/userID';
 
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,
@@ -60,25 +61,14 @@ router.post('/api/complaints',upload.array('images',10), validate,async (req, re
     return res.status(201).send()
 })
 
-router.get('/api/getcomplaints/:complaintId', async (req, res) => {
+router.get('/api/getcomplaints/:complaintId',userID, async (req, res) => {
 
     const complaintId = req.params.complaintId;
-
-    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
-
-    if(!jwttoken) {
-        return res.status(401).send("Please Login")
-    }
-    
-    const {id:userid, error} = await jwtDecode(jwttoken)
-    if(error) {
-        return res.status(401).send(error)
-    }
 
     try {
         client.query(
             'select * from complaints where user_id = $1 and complaint_id = $2',
-            [userid, complaintId],
+            [req.body.userID, complaintId],
             (error, results) => {
                 if (error) {
                     throw error;

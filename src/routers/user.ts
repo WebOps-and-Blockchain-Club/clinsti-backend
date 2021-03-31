@@ -1,5 +1,6 @@
 import express from "express";
 import client from "../../postgres";
+import userID from "../middleware/userID";
 import { jwtToken , jwtDecode } from "../Utils/jwt";
 import validate from "../Utils/validator";
 
@@ -54,23 +55,12 @@ router.post('/api/signin', validate, async (req, res) => {
     }
 });
 
-router.get('/api/user/me', async (req, res) => {
-
-    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
-
-    if(!jwttoken) {
-        return res.status(401).send("Please Login")
-    }
-    
-    const {id:userid, error} = await jwtDecode(jwttoken)
-    if(error) {
-        return res.status(401).send(error)
-    }
+router.get('/api/user/me',userID,  async (req, res) => {
 
     try {
         client.query(
             'select * from users where user_id = $1',
-            [userid],
+            [req.body.userID],
             (error, results) => {
                 if(error) {
                     throw error;
