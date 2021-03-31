@@ -63,9 +63,9 @@ router.patch('/api/editprofile', validate, async (req, res) => {
     if(!jwttoken) {
         return res.status(401).send("Please Login")
     }
-    const userid = jwtDecode(jwttoken)
-    if(userid === undefined) {
-        return res.status(401).send('Invalid Credentials')
+    const {id:userid, error} = await jwtDecode(jwttoken)
+    if(error) {
+        return res.status(401).send(error)
     }
 
     if (!isupdates) {

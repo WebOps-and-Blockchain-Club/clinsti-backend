@@ -25,23 +25,17 @@ router.post('/api/complaint',upload.array('images',10), validate,async (req, res
 
     const filenames = fileManager.extractFilenames(req)
 
-    if (!jwtToken){
-        fileManager.deleteFiles(filenames)
-        return res.status(400).send("bad Request")
-    }
-
-    var userId;
+    var {id:userId, error} = await jwtDecode(jwtToken)
 
     if(jwtToken === "test"){
         // ONLY FOR TEST, TO BE REMOVED
         userId = "90c1a25f-9849-4e11-b0a7-494c3ffca6ec"
+        error = undefined
     }
-    else{
-        userId = jwtDecode(jwtToken);
-    }
-    if(!userId) {
+
+    if(error) {
         fileManager.deleteFiles(filenames)
-        return res.status(400).send("bad token")
+        return res.status(400).send(error)
     }
 
     let createdTime = new Date().toISOString()
