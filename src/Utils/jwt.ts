@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 import * as dotenv from "dotenv";
+import client from "../../postgres";
 dotenv.config();
 
 function jwtToken(user_id: String) {
@@ -8,7 +9,8 @@ function jwtToken(user_id: String) {
 
 function jwtDecode(token: String) {
     var decoded = jwt.verify(token, process.env.jwtSecret)
-    return decoded._id
+    client.query('select * from users where user_id = $1', [decoded._id])
+    .then(() => decoded._id)
 }
 
 export {jwtToken, jwtDecode};

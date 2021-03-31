@@ -64,12 +64,16 @@ router.patch('/api/editprofile', validate, async (req, res) => {
         return res.status(401).send("Please Login")
     }
     const userid = jwtDecode(jwttoken)
+    if(userid === undefined) {
+        return res.status(401).send('Invalid Credentials')
+    }
 
     if (!isupdates) {
         return res.status(400).send('Invalid updates!')
     }
 
     try {
+        console.log('First')
         updatekeys.forEach(async (updatekey) => {
 
             if(updatekey === 'user_password') {
