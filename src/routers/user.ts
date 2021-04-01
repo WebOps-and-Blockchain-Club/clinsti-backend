@@ -1,7 +1,7 @@
 import express from "express";
 import client from "../../postgres";
 import auth from "../middleware/auth";
-import { jwtToken } from "../Utils/jwt";
+import jwtToken from "../Utils/jwt";
 import validate from "../Utils/validator";
 
 const bcrypt = require("bcryptjs");
@@ -23,7 +23,7 @@ router.post('/api/signup', validate, async (req, res) => {
         await client.query('insert into users(user_name, user_email, user_password) values($1, $2, $3)', [name, email, bcryptPassword]);
 
         const registeredUser = await client.query("select * from users where user_email = $1", [email]);
-        const userjwtToken = jwtToken(registeredUser.rows[0].user_id);
+        const userjwtToken = jwtToken(registeredUser.rows[0].user_id, registeredUser.rows[0].user_password);
 
         return res.status(201).send({name, userjwtToken});
     } catch (e) {
@@ -46,7 +46,7 @@ router.post('/api/signin', validate, async (req, res) => {
             return res.status(401).send('Invalid Credentials');
         }
 
-        const userjwtToken = jwtToken(user.rows[0].user_id);
+        const userjwtToken = jwtToken(user.rows[0].user_id, user.rows[0].user_password);
         const name = user.rows[0].user_name
 
         return res.status(200).send({name, userjwtToken});
