@@ -2,7 +2,7 @@ import validator from "validator";
 import fileManager from './file';
 
 function isValid(req: any, res: any, next: any) {
-    const {name, email, password} = req.body;
+    const {name, email, password, oldPassword, newPassword} = req.body;
 
     if(req.path === "/api/signup"){
         if(!name) {
@@ -25,12 +25,22 @@ function isValid(req: any, res: any, next: any) {
             return res.status(406).send("Please enter a valid Email.");
         }
     } else if (req.path === "/api/editaccount") {
-        if(password){
-            if ((password.toLowerCase().includes('password')) || password.length < 5) {
-                return res.status(406).send("Please enter strong password.");
-            }
+        if(!name) {
+            return res.status(406).send("Please enter your name.");
+        } else if (!email) {
+            return res.status(406).send("Please enter your email to register.");
+        } else if (!validator.isEmail(email)) {
+            return res.status(406).send("Please enter a valid Email.");
         }
-    } else if(req.path === "/api/feedback"){
+    } else if (req.path === "/api/changePassword") {
+        if(!oldPassword) {
+            return res.status(406).send("Please enter your Old Paaword");
+        } else if (!newPassword) {
+            return res.status(406).send("Please enter your new password.");
+        } else if ((newPassword.toLowerCase().includes('password')) || newPassword.length < 5) {
+            return res.status(406).send("Please enter strong password.");
+        }
+    }else if(req.path === "/api/feedback"){
         if(!req.body.feedback || req.body.feedback.length < 10){
             return res.status(406).send("Please write few more word.");
         }

@@ -100,4 +100,32 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
     }
 })
 
+router.post('/api/changePassword', auth, validate, async (req, res) => {
+    const {oldPassword, newPassword} = req.body;
+
+    try {
+        const user = await client.query("select * from users where user_id = $1", [req.body.userID]);
+
+        if (user.rows.length === 0) {
+            return res.status(401).send('Invalid Credentials')
+        }
+
+        const password_check = await bcrypt.compare(oldPassword, user.rows[0].user_password)
+        if(!password_check) {
+            return res.status(401).send('Invalid Password');
+        }
+        const bcryptnewPassword = await bcrypt.hash(newPassword, 10);
+
+        await client.query('update users set user_password = $1', [bcryptnewPassword]);
+
+        const registeredUser = await client.query("select * from users where user_id = $1", [req.body.userID]);
+        const userjwtToken = jwtToken(registeredUser.rows[0].user_id, registeredUser.rows[0].user_password);
+        const name = registeredUser.rows[0].user_name
+
+        return res.status(200).send({name, userjwtToken});
+    } catch (e) {
+        return res.status(400).send("Password Update Failed")
+    }
+})
+
 export default router
