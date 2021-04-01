@@ -76,7 +76,7 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
     const updatekeys = Object.keys(req.body);
     updatekeys.splice(updatekeys.indexOf('userID'), 1);
 
-    const allowedkeyupdates = ['user_name', 'user_password'];
+    const allowedkeyupdates = ['user_email', 'user_name'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
 
     if (!isupdates) {
@@ -84,19 +84,19 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
     }
 
     try {
-        updatekeys.forEach(async (updatekey) => {
 
-            if(updatekey === 'user_password') {
-                req.body[updatekey] = await bcrypt.hash(req.body[updatekey], 10);
-            }
-            
-            const str = 'update users set ' + updatekey + ' = $1 where user_id = $2';
-            client.query( str, [req.body[updatekey], req.body.userID] )
-            
-        })
-        return res.send('Profile Updated')
+        await client.query("BEGIN");
+
+        for (const updatekey of updatekeys) {
+            const query = 'update users set ' + updatekey + ' = $1 where user_id = $2';
+            await client.query(query, [req.body[updatekey], req.body.userID]);
+        }
+
+        await client.query("COMMIT");
+        return res.status(200).send("Profile Updated");
+        
     } catch (e) {
-        return res.status(500).send(e.detail)
+        return res.status(400).send("Update Failed")
     }
 })
 
