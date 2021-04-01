@@ -1,7 +1,6 @@
 import express from 'express';
 import multer from 'multer';
 import client from '../../postgres';
-import { jwtDecode } from '../Utils/jwt';
 import validate from '../Utils/validator'
 import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
@@ -19,30 +18,11 @@ var upload = multer({storage: storage});
 
 const router = express.Router();
 
-router.post('/api/complaints',upload.array('images',10), validate,async (req, res) =>{
+router.post('/api/complaints',upload.array('images',10), auth, validate,async (req, res) =>{
     
     const {description, location} = req.body
-    //const {description, jwtToken, location} = req.body
 
     const filenames = fileManager.extractFilenames(req)
-
-    //const {id:userId, error} = await jwtDecode(jwtToken)
-    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
-
-    if(!jwttoken) {
-        return res.status(401).send("Please Login")
-    }
-    
-    const {id:userId, error} = await jwtDecode(jwttoken)
-    if(error) {
-        return res.status(401).send(error)
-    }
-
-
-    if(error) {
-        fileManager.deleteFiles(filenames)
-        return res.status(400).send(error)
-    }
 
     let createdTime = new Date().toISOString()
     
@@ -50,7 +30,7 @@ router.post('/api/complaints',upload.array('images',10), validate,async (req, re
     let imagefilenames = filenames.length>0 ? `'{"${filenames.join('","')}"}'`: 'null'
     
     try {
-        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${userId}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
+        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${req.body.userID}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
         fileManager.deleteFiles(filenames)
@@ -66,28 +46,21 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
     const complaintId = req.params.complaintId;
 
     try {
-        client.query(
+        const result = await client.query(
             'select * from complaints where user_id = $1 and complaint_id = $2',
             [req.body.userID, complaintId],
-            (error, results) => {
-                if (error) {
-                    throw error;
-                }
-                if(results.rowCount === 1) {
-                    const {complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark} = results.rows[0];
-                    return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, image, feedback_rating, feedback_remark})
-                }
-                return res.status(400).send('Bad Request');
-            }
         );
-        return null;
+        
+        const {complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark} = result.rows[0];
+        return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark})
+
     } catch (e) {
         return res.status(500).send(e.detail)
     }
 
 })
 
-router.post('/api/complaints/:complaintId', auth, validate,async (req, res)=>{
+router.post('/api/complaints/:complaintId', auth, validate, async (req, res)=>{
 
     const complaintId = req.params.complaintId
     const {fbRating, fbRemark} = req.body

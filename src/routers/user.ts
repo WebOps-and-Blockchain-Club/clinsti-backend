@@ -58,18 +58,13 @@ router.post('/api/signin', validate, async (req, res) => {
 router.get('/api/user/me', auth,  async (req, res) => {
 
     try {
-        return client.query(
+        const results =  await client.query(
             'select * from users where user_id = $1',
-            [req.body.userID],
-            (error, results) => {
-                if(error) {
-                    throw error;
-                }
-            const name = results.rows[0].user_name;
-            const email = results.rows[0].user_email
-            return res.status(200).send({name , email});
-            }
+            [req.body.userID]
         );
+        const name = results.rows[0].user_name;
+        const email = results.rows[0].user_email
+        return res.status(200).send({name , email});
 
     } catch (e) {
         return res.status(500).send(e.detail)
