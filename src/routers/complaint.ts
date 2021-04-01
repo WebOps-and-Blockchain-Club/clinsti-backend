@@ -4,7 +4,7 @@ import client from '../../postgres';
 import { jwtDecode } from '../Utils/jwt';
 import validate from '../Utils/validator'
 import fileManager from '../Utils/file'
-import userID from '../middleware/userID';
+import auth from '../middleware/auth';
 
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,
@@ -61,7 +61,7 @@ router.post('/api/complaints',upload.array('images',10), validate,async (req, re
     return res.status(201).send()
 })
 
-router.get('/api/getcomplaints/:complaintId',userID, async (req, res) => {
+router.get('/api/complaints/:complaintId', auth, async (req, res) => {
 
     const complaintId = req.params.complaintId;
 
@@ -87,26 +87,10 @@ router.get('/api/getcomplaints/:complaintId',userID, async (req, res) => {
 
 })
 
-router.post('/api/complaints/:complaintId',validate,async (req, res)=>{
+router.post('/api/complaints/:complaintId', auth, validate,async (req, res)=>{
 
     const complaintId = req.params.complaintId
     const {fbRating, fbRemark} = req.body
-
-    // var {id:userId, error} = await jwtDecode(jwtToken)
-
-    // if(error){
-    //     res.status(400).send(error)
-    // }
-    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
-
-    if(!jwttoken) {
-        return res.status(401).send("Please Login")
-    }
-    
-    const {id:userId, error} = await jwtDecode(jwttoken)
-    if(error) {
-        return res.status(401).send(error)
-    }
 
     try {
         const queryResult = await client.query(`select user_id,feedback_rating from complaints where complaint_id=${complaintId}`)
@@ -116,7 +100,7 @@ router.post('/api/complaints/:complaintId',validate,async (req, res)=>{
 
         const complaintUserId = queryResult.rows[0].user_id
         
-        if (complaintUserId === userId){
+        if (complaintUserId === req.body.userID){
             if (queryResult.rows[0].feedback_rating){
                 return res.status(403).send("Feedback already submitted")
             }

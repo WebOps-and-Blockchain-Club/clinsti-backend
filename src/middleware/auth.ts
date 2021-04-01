@@ -1,6 +1,6 @@
 import {jwtDecode} from '../Utils/jwt';
 
-const userID = async (req: any, res: any, next: any) => {
+const auth = async (req: any, res: any, next: any) => {
     const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
 
     if(!jwttoken) {
@@ -16,4 +16,4 @@ const userID = async (req: any, res: any, next: any) => {
     next();
 }
 
-export default userID;
+export default auth;

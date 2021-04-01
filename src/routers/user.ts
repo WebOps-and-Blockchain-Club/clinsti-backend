@@ -1,7 +1,7 @@
 import express from "express";
 import client from "../../postgres";
-import userID from "../middleware/userID";
-import { jwtToken , jwtDecode } from "../Utils/jwt";
+import auth from "../middleware/auth";
+import { jwtToken } from "../Utils/jwt";
 import validate from "../Utils/validator";
 
 const bcrypt = require("bcryptjs");
@@ -55,10 +55,10 @@ router.post('/api/signin', validate, async (req, res) => {
     }
 });
 
-router.get('/api/user/me',userID,  async (req, res) => {
+router.get('/api/user/me', auth,  async (req, res) => {
 
     try {
-        client.query(
+        return client.query(
             'select * from users where user_id = $1',
             [req.body.userID],
             (error, results) => {
@@ -71,29 +71,18 @@ router.get('/api/user/me',userID,  async (req, res) => {
             }
         );
 
-        return null;
-
     } catch (e) {
         return res.status(500).send(e.detail)
     }
 })
 
-router.patch('/api/editprofile', validate, async (req, res) => {
+router.patch('/api/editprofile', auth, validate, async (req, res) => {
 
     const updatekeys = Object.keys(req.body);
+    updatekeys.splice(updatekeys.indexOf('userID'), 1);
+
     const allowedkeyupdates = ['user_name', 'user_password'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
-
-    const jwttoken = req.headers['authorization']?.replace('Bearer ', '')
-    
-    if(!jwttoken) {
-        return res.status(401).send("Please Login")
-    }
-
-    const {id:userid, error} = await jwtDecode(jwttoken)
-    if(error) {
-        return res.status(401).send(error)
-    }
 
     if (!isupdates) {
         return res.status(400).send('Invalid updates!')
@@ -107,18 +96,10 @@ router.patch('/api/editprofile', validate, async (req, res) => {
             }
             
             const str = 'update users set ' + updatekey + ' = $1 where user_id = $2';
-            client.query(
-                str,
-                [req.body[updatekey], userid],
-                (error, results) => {
-                    if(error) {
-                        throw error;
-                    }
-                    return results; 
-                }
-            );
-        });
-        return res.status(200).send('Profile Updated');
+            client.query( str, [req.body[updatekey], req.body.userID] )
+            
+        })
+        return res.send('Profile Updated')
     } catch (e) {
         return res.status(500).send(e.detail)
     }
