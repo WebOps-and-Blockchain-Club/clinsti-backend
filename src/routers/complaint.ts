@@ -45,11 +45,11 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
 
     try {
         const result = await client.query(
-            'select * from complaints where user_id = $1',
-            [req.body.userID],
+            'select * from complaints where complaint_id = $1',
+            [req.params.complaintId],
         );
         
-        if(result.rows[0].user_id !== req.params.complaintId) {
+        if(result.rows[0].user_id !== req.body.userID) {
             return res.status(401).send('Access denied');
         }
 
