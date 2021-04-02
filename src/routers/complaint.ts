@@ -4,6 +4,7 @@ import client from '../../postgres';
 import validate from '../Utils/validator'
 import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
+import path from 'path';
 
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,
@@ -57,9 +58,18 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
         return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark})
 
     } catch (e) {
-        return res.status(500).send(e.detail)
+        return res.status(500).send('Server Error')
     }
 
+})
+
+router.get('/api/images/:imageName', auth, async (req, res) => {
+    try {
+        const imagePath = path.join(fileManager.imageDirectory, req.params.imageName)
+        return res.status(200).sendFile(imagePath);
+    } catch {
+        return res.status(500).send('Server Error')
+    }
 })
 
 router.post('/api/complaints/:complaintId', auth, validate, async (req, res)=>{
