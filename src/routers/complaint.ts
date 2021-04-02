@@ -72,7 +72,7 @@ router.get('/api/images/:imageName', auth, async (req, res) => {
     }
 })
 
-router.post('/api/complaints/:complaintId', auth, validate, async (req, res)=>{
+router.post('/api/complaints/:complaintId/feedback', auth, validate, async (req, res)=>{
 
     const complaintId = req.params.complaintId
     const {fbRating, fbRemark} = req.body
