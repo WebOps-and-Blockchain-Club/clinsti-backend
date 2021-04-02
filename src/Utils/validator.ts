@@ -69,29 +69,26 @@ function isValid(req: any, res: any, next: any) {
                 return res.status(400).send("Location should be minimum length  5")
             }
         }
-    } else if(/\/api\/complaints\/\d+/.test(req.path)){
-        // Validates CRUD to singular complatint in complants resource
-        if (req.method === "POST"){
-            // Validates Create feedback rating and feedback remark
-            const {fbRating, fbRemark} = req.body
-            if (!fbRating){
-                return res.status(400).send("Feedback Rating is missing")
-            }
-            if (typeof(fbRating) !== "number"){
-                return res.status(400).send("Expected number type for rating")
-            }
-            if (fbRating<1 || fbRating>5){
-                return res.status(400).send("Rating should be between 1 and 5, inclusive")
-            }
-            if(!fbRemark){
-                return next()
-            }
-            if (typeof(fbRemark) !== "string"){
-                return res.status(400).send("Expected string type for remark")
-            }
-            if (!validator.isLength(fbRemark,{min:5})){
-                return res.status(400).send("Remark should be minimum lenght 5")
-            }
+    } else if(/\/api\/complaints\/\d+\/feedback/.test(req.path)){
+        // Validates post feedback rating and feedback remark
+        const {fbRating, fbRemark} = req.body
+        if (!fbRating){
+            return res.status(400).send("Feedback Rating is missing")
+        }
+        if (typeof(fbRating) !== "number"){
+            return res.status(400).send("Expected number type for rating")
+        }
+        if (fbRating<1 || fbRating>5){
+            return res.status(400).send("Rating should be between 1 and 5, inclusive")
+        }
+        if(!fbRemark){
+            return next()
+        }
+        if (typeof(fbRemark) !== "string"){
+            return res.status(400).send("Expected string type for remark")
+        }
+        if (!validator.isLength(fbRemark,{min:5})){
+            return res.status(400).send("Remark should be minimum lenght 5")
         }
     }
 
