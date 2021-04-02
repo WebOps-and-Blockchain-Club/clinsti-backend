@@ -102,5 +102,38 @@ router.post('/api/complaints/:complaintId/feedback', auth, validate, async (req,
     }
 })
 
+router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
+
+        try {
+            const result = await client.query(
+                `SELECT * from complaints where complaint_id = ${req.params.complaintId}`
+            );
+            
+            if(result.rows.length == 0){
+                return res.status(401).send('Access denied')
+            }
+
+            if(result.rows[0].user_id !== req.body.userID) {
+                return res.status(401).send('Access denied');
+            }
+
+            const {status}= result.rows[0];
+
+            if (status == 'completed'){
+                return res.status(401).send('Cannot Delete Completed Request')
+            }
+
+            await client.query(
+                `DELETE from complaints where complaint_id = ${req.params.complaintId}`
+            );
+
+            return res.status(200).send('Complaint Removed')
+    
+        } catch (e) {
+            return res.status(500).send('Server Error')
+        }
+    
+    })
+
 
 export default router
