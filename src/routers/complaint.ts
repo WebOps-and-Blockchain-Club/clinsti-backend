@@ -43,14 +43,16 @@ router.post('/api/complaints',upload.array('images',10), auth, validate,async (r
 
 router.get('/api/complaints/:complaintId', auth, async (req, res) => {
 
-    const complaintId = req.params.complaintId;
-
     try {
         const result = await client.query(
-            'select * from complaints where user_id = $1 and complaint_id = $2',
-            [req.body.userID, complaintId],
+            'select * from complaints where user_id = $1',
+            [req.body.userID],
         );
         
+        if(result.rows[0].user_id !== req.params.complaintId) {
+            return res.status(401).send('Access denied');
+        }
+
         const {complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark} = result.rows[0];
         return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark})
 
