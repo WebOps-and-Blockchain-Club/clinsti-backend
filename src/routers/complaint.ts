@@ -8,9 +8,9 @@ import path from 'path';
 
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,
-    filename: function(_req,file,cb) {
+    filename: function(req,file,cb) {
         const filetype = file['mimetype'].split('/')[1]
-        const filename = fileManager.createFilename(filetype)
+        const filename = fileManager.createFilename(filetype, req.headers.userID)
         cb(null, filename)
     }
 })
@@ -19,16 +19,23 @@ var upload = multer({storage: storage});
 
 const router = express.Router();
 
-router.post('/api/complaints',upload.array('images',10), auth, validate,async (req, res) => {
+router.post('/api/complaints',auth ,upload.array('images',10), validate,async (req, res) => {
     
     const {description, location} = req.body
 
-    const filenames = fileManager.extractFilenames(req)
+    var filenames = fileManager.extractFilenames(req)
+    
 
     let createdTime = new Date().toISOString()
     
     // image filename array value to be inserted to table
-    let imagefilenames = filenames.length>0 ? `'{"${filenames.join('","')}"}'`: 'null'
+    let imagefilenames = filenames.length>0 
+        ? `'{"${Array.from(filenames,
+                    (filename)=>filename.split('_').slice(1).join("")
+                    ).join('","')}"}'`
+        : 'null'
+    console.log(filenames)
+    console.log(imagefilenames)
     
     try {
         await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)

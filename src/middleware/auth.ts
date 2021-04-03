@@ -1,4 +1,3 @@
-import fileManager from '../Utils/file';
 import client from '../../postgres';
 const jwt = require("jsonwebtoken");
 
@@ -16,10 +15,6 @@ const auth = async (req: any, res: any, next: any) => {
         next();
         }
     } catch (e) {
-
-        if(req.files){
-            fileManager.deleteFiles(fileManager.extractFilenames(req))
-        }
         return res.status(400).send('Invalid Credentials')
     }
 }

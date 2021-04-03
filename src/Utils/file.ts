@@ -26,15 +26,15 @@ function deleteFiles(filenames: Array<string>){
     })   
 }
 
-function _randomFilename(filetype: string) {
-    return Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + filetype
+function _randomFilename(filetype: string, uuid: string) {
+    return uuid + '_' + Date.now() + '-' + Math.round(Math.random()*1E9) + '.' + filetype
 }
 
 
-function createFilename(filetype: string){
-    var filename = _randomFilename(filetype)
+function createFilename(filetype: string, uuid: any){
+    var filename = _randomFilename(filetype, uuid)
     while (fs.existsSync(imageDirectory + filename)){
-        filename = _randomFilename(filetype)
+        filename = _randomFilename(filetype, uuid)
     }
     return filename
 }
