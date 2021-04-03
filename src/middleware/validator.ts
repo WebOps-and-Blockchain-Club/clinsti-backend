@@ -1,5 +1,5 @@
 import validator from "validator";
-import fileManager from './file';
+import fileManager from '../Utils/file';
 
 function isValid(req: any, res: any, next: any) {
     const {name, email, password, oldPassword, newPassword} = req.body;

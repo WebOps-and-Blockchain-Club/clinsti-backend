@@ -1,6 +1,6 @@
 import express from "express";
 import client from "../../postgres";
-import validate from "../Utils/validator";
+import validate from "../middleware/validator";
 const router = express.Router();
 
 router.post('/api/feedback', validate, async (req, res) => {

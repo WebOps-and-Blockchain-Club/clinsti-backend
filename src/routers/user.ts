@@ -2,7 +2,7 @@ import express from "express";
 import client from "../../postgres";
 import auth from "../middleware/auth";
 import jwtToken from "../Utils/jwt";
-import validate from "../Utils/validator";
+import validate from "../middleware/validator";
 
 const bcrypt = require("bcryptjs");
 

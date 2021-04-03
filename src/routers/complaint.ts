@@ -1,6 +1,6 @@
 import express from 'express';
 import client from '../../postgres';
-import validate from '../Utils/validator'
+import validate from '../middleware/validator'
 import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
 import path from 'path';
