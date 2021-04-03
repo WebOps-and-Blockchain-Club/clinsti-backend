@@ -129,7 +129,7 @@ router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
                 return res.status(401).send('Cannot Delete Completed Request')
             }
 
-            fileManager.deleteFiles(images.map((im: Array<string>) =>
+            fileManager.deleteFiles(images.map((im: string) =>
             // user_id+"-"+
             im));
 
