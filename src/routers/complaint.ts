@@ -67,6 +67,22 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
 
 })
 
+router.get('/api/complaints', auth, async (req, res) => {
+    try{
+        const result = await client.query(
+            'select complaint_id, _location, created_time, status from complaints where user_id = $1',
+            [req.headers.userID]
+        );
+        if(result.rowCount === 0){
+            return res.status(404).send('No Complaint Registered yet!')
+        }
+        return res.status(200).send(result.rows);
+    }
+    catch (e) {
+        return res.status(500).send('Server Error');
+    }
+})
+
 router.get('/api/images/:imageName', auth, async (req, res) => {
     try {
         const imagePath = path.join(fileManager.imageDirectory, req.params.imageName)
@@ -114,7 +130,7 @@ router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
             );
             
             if(result.rows.length == 0){
-                return res.status(401).send('Access denied')
+                return res.status(401).send('No Complaint registered');
             }
 
             if(result.rows[0].user_id !== req.headers.userID) {
