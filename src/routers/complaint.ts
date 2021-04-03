@@ -121,11 +121,17 @@ router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
                 return res.status(401).send('Access denied');
             }
 
-            const {status}= result.rows[0];
+            const {
+                // user_id,
+                status, images} = result.rows[0];
 
             if (status == 'completed'){
                 return res.status(401).send('Cannot Delete Completed Request')
             }
+
+            fileManager.deleteFiles(images.map((im: Array<string>) =>
+            // user_id+"-"+
+            im));
 
             await client.query(
                 `DELETE from complaints where complaint_id = ${req.params.complaintId}`
