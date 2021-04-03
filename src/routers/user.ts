@@ -38,7 +38,7 @@ router.post('/api/signin', validate, async (req, res) => {
         const user = await client.query("select * from users where user_email = $1", [email]);
 
         if (user.rows.length === 0) {
-            return res.status(401).send('Invalid Credentials')
+            return res.status(401).send('User not registered')
         }
 
         const password_check = await bcrypt.compare(password, user.rows[0].user_password)
@@ -60,7 +60,7 @@ router.get('/api/user/me', auth,  async (req, res) => {
     try {
         const results =  await client.query(
             'select * from users where user_id = $1',
-            [req.body.userID]
+            [req.headers.userID]
         );
         const name = results.rows[0].user_name;
         const email = results.rows[0].user_email
@@ -74,7 +74,7 @@ router.get('/api/user/me', auth,  async (req, res) => {
 router.patch('/api/editprofile', auth, validate, async (req, res) => {
 
     const updatekeys = Object.keys(req.body);
-    updatekeys.splice(updatekeys.indexOf('userID'), 1);
+    //updatekeys.splice(updatekeys.indexOf('userID'), 1);
 
     const allowedkeyupdates = ['user_email', 'user_name'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
@@ -89,7 +89,7 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
 
         for (const updatekey of updatekeys) {
             const query = 'update users set ' + updatekey + ' = $1 where user_id = $2';
-            await client.query(query, [req.body[updatekey], req.body.userID]);
+            await client.query(query, [req.body[updatekey], req.headers.userID]);
         }
 
         await client.query("COMMIT");
@@ -104,7 +104,7 @@ router.post('/api/changePassword', auth, validate, async (req, res) => {
     const {oldPassword, newPassword} = req.body;
 
     try {
-        const user = await client.query("select * from users where user_id = $1", [req.body.userID]);
+        const user = await client.query("select * from users where user_id = $1", [req.headers.userID]);
 
         if (user.rows.length === 0) {
             return res.status(401).send('Invalid Credentials')
@@ -118,7 +118,7 @@ router.post('/api/changePassword', auth, validate, async (req, res) => {
 
         await client.query('update users set user_password = $1', [bcryptnewPassword]);
 
-        const registeredUser = await client.query("select * from users where user_id = $1", [req.body.userID]);
+        const registeredUser = await client.query("select * from users where user_id = $1", [req.headers.userID]);
         const userjwtToken = jwtToken(registeredUser.rows[0].user_id, registeredUser.rows[0].user_password);
         const name = registeredUser.rows[0].user_name
 

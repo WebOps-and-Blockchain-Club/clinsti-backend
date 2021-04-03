@@ -19,7 +19,7 @@ var upload = multer({storage: storage});
 
 const router = express.Router();
 
-router.post('/api/complaints',upload.array('images',10), auth, validate,async (req, res) =>{
+router.post('/api/complaints',upload.array('images',10), auth, validate,async (req, res) => {
     
     const {description, location} = req.body
 
@@ -31,7 +31,7 @@ router.post('/api/complaints',upload.array('images',10), auth, validate,async (r
     let imagefilenames = filenames.length>0 ? `'{"${filenames.join('","')}"}'`: 'null'
     
     try {
-        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${req.body.userID}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
+        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
         fileManager.deleteFiles(filenames)
@@ -50,7 +50,11 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
             [req.params.complaintId],
         );
         
-        if(result.rows[0].user_id !== req.body.userID) {
+        if(result.rowCount === 0) {
+            return res.status(404).send('Complaint Not Found');
+        }
+
+        if(result.rows[0].user_id !== req.headers.userID) {
             return res.status(401).send('Access denied');
         }
 
@@ -85,7 +89,7 @@ router.post('/api/complaints/:complaintId/feedback', auth, validate, async (req,
 
         const complaintUserId = queryResult.rows[0].user_id
         
-        if (complaintUserId === req.body.userID){
+        if (complaintUserId === req.headers.userID){
             if (queryResult.rows[0].feedback_rating){
                 return res.status(403).send("Feedback already submitted")
             }
@@ -113,7 +117,7 @@ router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
                 return res.status(401).send('Access denied')
             }
 
-            if(result.rows[0].user_id !== req.body.userID) {
+            if(result.rows[0].user_id !== req.headers.userID) {
                 return res.status(401).send('Access denied');
             }
 

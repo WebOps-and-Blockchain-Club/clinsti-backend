@@ -12,7 +12,7 @@ const auth = async (req: any, res: any, next: any) => {
 
     const user = await client.query('select * from users where user_id = $1 and user_password = $2', [decoded._id, decoded._password]);
     if (user) {
-        req.body.userID = user.rows[0].user_id;
+        req.headers.userID = user.rows[0].user_id;
         next();
         }
     } catch (e) {
