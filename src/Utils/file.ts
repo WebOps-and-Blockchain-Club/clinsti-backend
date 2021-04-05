@@ -39,6 +39,9 @@ function createFilename(filetype: string, uuid: any){
     return filename
 }
 
+function isFileExists(filePath: string) {
+    if (fs.existsSync(filePath)) return true;
+    else return false;
+}
 
-
-export default {deleteFiles, createFilename, extractFilenames, imageDirectory};
+export default {deleteFiles, createFilename, extractFilenames, imageDirectory, isFileExists};

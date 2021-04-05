@@ -77,8 +77,14 @@ router.get('/client/complaints', auth, async (req, res) => {
 })
 
 router.get('/client/images/:imagename', auth, async (req, res) => {
+    
     try {
-        const imagePath = path.join(fileManager.imageDirectory, req.params.imagename)
+        const imagePath = path.join(fileManager.imageDirectory, req.headers.userID+'_'+req.params.imagename);
+
+        if(!fileManager.isFileExists(imagePath)) {
+            return res.status(404).send('File doesnot Exists')
+        }
+
         return res.status(200).sendFile(imagePath);
     } catch {
         return res.status(500).send('Server Error')
