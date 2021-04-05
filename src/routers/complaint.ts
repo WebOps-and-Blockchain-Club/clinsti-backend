@@ -8,7 +8,7 @@ import upload from  '../middleware/upload'
 
 const router = express.Router();
 
-router.post('/api/complaints',auth ,upload, validate,async (req, res) => {
+router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
     const {description, location} = req.body
 
     var filenames = fileManager.extractFilenames(req)
@@ -35,12 +35,12 @@ router.post('/api/complaints',auth ,upload, validate,async (req, res) => {
     return res.status(201).send()
 })
 
-router.get('/api/complaints/:complaintId', auth, async (req, res) => {
+router.get('/client/complaints/:complaintid', auth, async (req, res) => {
 
     try {
         const result = await client.query(
             'select * from complaints where complaint_id = $1',
-            [req.params.complaintId],
+            [req.params.complaintid],
         );
         
         if(result.rowCount === 0) {
@@ -60,7 +60,7 @@ router.get('/api/complaints/:complaintId', auth, async (req, res) => {
 
 })
 
-router.get('/api/complaints', auth, async (req, res) => {
+router.get('/client/complaints', auth, async (req, res) => {
     try{
         const result = await client.query(
             'select complaint_id, _location, created_time, status from complaints where user_id = $1',
@@ -76,18 +76,18 @@ router.get('/api/complaints', auth, async (req, res) => {
     }
 })
 
-router.get('/api/images/:imageName', auth, async (req, res) => {
+router.get('/client/images/:imagename', auth, async (req, res) => {
     try {
-        const imagePath = path.join(fileManager.imageDirectory, req.params.imageName)
+        const imagePath = path.join(fileManager.imageDirectory, req.params.imagename)
         return res.status(200).sendFile(imagePath);
     } catch {
         return res.status(500).send('Server Error')
     }
 })
 
-router.post('/api/complaints/:complaintId/feedback', auth, validate, async (req, res)=>{
+router.post('/client/complaints/:complaintid/feedback', auth, validate, async (req, res)=>{
 
-    const complaintId = req.params.complaintId
+    const complaintId = req.params.complaintid
     const {fbRating, fbRemark} = req.body
 
     try {
@@ -115,11 +115,11 @@ router.post('/api/complaints/:complaintId/feedback', auth, validate, async (req,
     }
 })
 
-router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
+router.delete('/client/complaints/:complaintid', auth, async (req, res) => {
 
         try {
             const result = await client.query(
-                `SELECT * from complaints where complaint_id = ${req.params.complaintId}`
+                `SELECT * from complaints where complaint_id = ${req.params.complaintid}`
             );
             
             if(result.rows.length == 0){
@@ -145,7 +145,7 @@ router.delete('/api/complaints/:complaintId', auth, async (req, res) => {
             }
 
             await client.query(
-                `DELETE from complaints where complaint_id = ${req.params.complaintId}`
+                `DELETE from complaints where complaint_id = ${req.params.complaintid}`
             );
 
             return res.status(200).send('Complaint Removed')

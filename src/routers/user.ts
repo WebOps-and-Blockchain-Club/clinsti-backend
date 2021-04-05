@@ -8,7 +8,7 @@ const bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
-router.post('/api/signup', validate, async (req, res) => {
+router.post('/client/accounts/signup', validate, async (req, res) => {
     const {name, email, password} = req.body
     
     try {
@@ -31,7 +31,7 @@ router.post('/api/signup', validate, async (req, res) => {
     }
 });
 
-router.post('/api/signin', validate, async (req, res) => {
+router.post('/client/accounts/signin', validate, async (req, res) => {
     const {email, password} = req.body;
 
     try {
@@ -55,7 +55,7 @@ router.post('/api/signin', validate, async (req, res) => {
     }
 });
 
-router.get('/api/user/me', auth,  async (req, res) => {
+router.get('/client/accounts', auth,  async (req, res) => {
 
     try {
         const results =  await client.query(
@@ -71,12 +71,12 @@ router.get('/api/user/me', auth,  async (req, res) => {
     }
 })
 
-router.patch('/api/editprofile', auth, validate, async (req, res) => {
+router.patch('/client/accounts', auth, validate, async (req, res) => {
 
     const updatekeys = Object.keys(req.body);
     //updatekeys.splice(updatekeys.indexOf('userID'), 1);
 
-    const allowedkeyupdates = ['user_email', 'user_name'];
+    const allowedkeyupdates = ['name', 'email'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
 
     if (!isupdates) {
@@ -88,7 +88,7 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
         await client.query("BEGIN");
 
         for (const updatekey of updatekeys) {
-            const query = 'update users set ' + updatekey + ' = $1 where user_id = $2';
+            const query = 'update users set user_' + updatekey + ' = $1 where user_id = $2';
             await client.query(query, [req.body[updatekey], req.headers.userID]);
         }
 
@@ -100,7 +100,7 @@ router.patch('/api/editprofile', auth, validate, async (req, res) => {
     }
 })
 
-router.post('/api/changePassword', auth, validate, async (req, res) => {
+router.post('/client/accounts/changepassword', auth, validate, async (req, res) => {
     const {oldPassword, newPassword} = req.body;
 
     try {

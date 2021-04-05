@@ -3,7 +3,7 @@ import client from "../../postgres";
 import validate from "../middleware/validator";
 const router = express.Router();
 
-router.post('/api/feedback', validate, async (req, res) => {
+router.post('/client/feedback', validate, async (req, res) => {
     const {feedback,feedback_type} = req.body
     
     try {

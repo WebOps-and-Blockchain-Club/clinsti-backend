@@ -4,7 +4,7 @@ import fileManager from '../Utils/file';
 function isValid(req: any, res: any, next: any) {
     const {name, email, password, oldPassword, newPassword} = req.body;
 
-    if(req.path === "/api/signup"){
+    if(req.path === "/client/accounts/signup"){
         if(!name) {
             return res.status(406).send("Please enter your name.");
         } else if (!email) {
@@ -16,7 +16,7 @@ function isValid(req: any, res: any, next: any) {
         } else if ((password.toLowerCase().includes('password')) || password.length < 5) {
             return res.status(406).send("Please enter strong password.");
         }
-    } else if (req.path === "/api/signin") {
+    } else if (req.path === "/client/accounts/signin") {
         if (!email) {
             return res.status(406).send("Please enter your registered email.");
         } else if (!password) {
@@ -24,15 +24,19 @@ function isValid(req: any, res: any, next: any) {
         } else if (!validator.isEmail(email)) {
             return res.status(406).send("Please enter a valid Email.");
         }
-    } else if (req.path === "/api/editaccount") {
-        if(!name) {
-            return res.status(406).send("Please enter your name.");
-        } else if (!email) {
-            return res.status(406).send("Please enter your email to register.");
-        } else if (!validator.isEmail(email)) {
-            return res.status(406).send("Please enter a valid Email.");
+    } else if (req.path === "/client/accounts") {
+
+        if (req.method === 'PATCH') {
+            if(!name) {
+                return res.status(406).send("Please enter your name.");
+            } else if (!email) {
+                return res.status(406).send("Please enter your email to register.");
+            } else if (!validator.isEmail(email)) {
+                return res.status(406).send("Please enter a valid Email.");
+            }
         }
-    } else if (req.path === "/api/changePassword") {
+
+    } else if (req.path === "/client/accounts/changepassword") {
         if(!oldPassword) {
             return res.status(406).send("Please enter your Old Paaword");
         } else if (!newPassword) {
@@ -40,11 +44,11 @@ function isValid(req: any, res: any, next: any) {
         } else if ((newPassword.toLowerCase().includes('password')) || newPassword.length < 5) {
             return res.status(406).send("Please enter strong password.");
         }
-    }else if(req.path === "/api/feedback"){
+    }else if(req.path === "/client/feedback"){
         if(!req.body.feedback || req.body.feedback.length < 10){
             return res.status(406).send("Please write few more word.");
         }
-    } else if(req.path === "/api/complaints") {
+    } else if(req.path === "/client/complaints") {
         // Validates CRUD to complaints resource
 
         if (req.method === "POST"){
@@ -69,7 +73,7 @@ function isValid(req: any, res: any, next: any) {
                 return res.status(400).send("Location should be minimum length  5")
             }
         }
-    } else if(/\/api\/complaints\/\d+\/feedback/.test(req.path)){
+    } else if(/\/client\/complaints\/\d+\/feedback/.test(req.path)){
         // Validates post feedback rating and feedback remark
         const {fbRating, fbRemark} = req.body
         if (!fbRating){
