@@ -5,8 +5,11 @@ import client from "./postgres";
 import userRouter from "./src/routers/user"
 import complaintRouter from "./src/routers/complaint"
 import feedbackRouter from "./src/routers/feedback"
+const cors = require('cors');
+
 
 const app = express();
+app.use(cors());
 
 client.connect().then(() => {
   console.log("Connected to database");
