@@ -7,6 +7,8 @@ import userRouter from "./src/client-routers/user"
 import adminRouter from "./src/admin-routers/admin"
 import complaintRouter from "./src/client-routers/complaint"
 import feedbackRouter from "./src/client-routers/feedback"
+import adminComplaintRouter from "./src/admin-routers/complaint"
+
 const cors = require('cors');
 
 
@@ -24,5 +26,6 @@ client.connect().then(() => {
   app.use(adminRouter)
   app.use(complaintRouter)
   app.use(feedbackRouter)
+  app.use(adminComplaintRouter)
   app.listen(3000/*,'192.168.43.104'*/, () => console.log("Listening on port 3000!"));
 });

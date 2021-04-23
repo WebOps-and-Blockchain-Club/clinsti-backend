@@ -51,8 +51,8 @@ router.get('/client/complaints/:complaintid', auth, async (req, res) => {
             return res.status(401).send('Access denied');
         }
 
-        const {complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark} = result.rows[0];
-        return res.status(200).send({complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark})
+        const {complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
+        return res.status(200).send({complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
 
     } catch (e) {
         return res.status(500).send('Server Error')
