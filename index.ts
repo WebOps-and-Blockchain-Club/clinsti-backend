@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 dotenv.config();
 import client from "./postgres";
 import userRouter from "./src/routers/user"
-import adminRouter from "./src/routers/admin"
+import adminRouter from "./src/admin-routers/admin"
 import complaintRouter from "./src/routers/complaint"
 import feedbackRouter from "./src/routers/feedback"
 const cors = require('cors');

@@ -16,7 +16,7 @@ function isValid(req: any, res: any, next: any) {
         } else if ((password.toLowerCase().includes('password')) || password.length < 5) {
             return res.status(406).send("Please enter strong password.");
         }
-    } else if (req.path === "/client/accounts/signin") {
+    } else if (req.path === "/client/accounts/signin" || req.path === "/admin") {
         if (!email) {
             return res.status(406).send("Please enter your registered email.");
         } else if (!password) {
