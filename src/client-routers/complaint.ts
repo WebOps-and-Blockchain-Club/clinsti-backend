@@ -9,7 +9,7 @@ import upload from  '../middleware/upload'
 const router = express.Router();
 
 router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
-    const {description, location} = req.body
+    const {description, location, wasteType, zone} = req.body
 
     var filenames = fileManager.extractFilenames(req)
     
@@ -24,7 +24,7 @@ router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
         : 'null'
     
     try {
-        await client.query(`insert into complaints (user_id,description,_location,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','posted','${createdTime}',${imagefilenames})`)
+        await client.query(`insert into complaints (user_id,description,_location,waste_type,zone,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','${wasteType}','${zone}','posted','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
         fileManager.deleteFiles(filenames)
@@ -51,8 +51,8 @@ router.get('/client/complaints/:complaintid', auth, async (req, res) => {
             return res.status(401).send('Access denied');
         }
 
-        const {complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark} = result.rows[0];
-        return res.status(200).send({complaint_id, description, _location, status, created_time, completed_time, images, feedback_rating, feedback_remark})
+        const {complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark} = result.rows[0];
+        return res.status(200).send({complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark})
 
     } catch (e) {
         return res.status(500).send('Server Error')
