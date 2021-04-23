@@ -3,10 +3,10 @@ import * as dotenv from "dotenv";
 const cookieParser = require('cookie-parser');
 dotenv.config();
 import client from "./postgres";
-import userRouter from "./src/routers/user"
+import userRouter from "./src/client-routers/user"
 import adminRouter from "./src/admin-routers/admin"
-import complaintRouter from "./src/routers/complaint"
-import feedbackRouter from "./src/routers/feedback"
+import complaintRouter from "./src/client-routers/complaint"
+import feedbackRouter from "./src/client-routers/feedback"
 const cors = require('cors');
 
 
