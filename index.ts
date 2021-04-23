@@ -6,6 +6,7 @@ import client from "./postgres";
 import userRouter from "./src/client-routers/user"
 import adminRouter from "./src/admin-routers/admin"
 import complaintRouter from "./src/client-routers/complaint"
+import adminComplaintRouter from './src/admin-routers/complaint'
 import feedbackRouter from "./src/client-routers/feedback"
 const cors = require('cors');
 
@@ -23,6 +24,7 @@ client.connect().then(() => {
   app.use(userRouter)
   app.use(adminRouter)
   app.use(complaintRouter)
+  app.use(adminComplaintRouter)
   app.use(feedbackRouter)
-  app.listen(3000/*,'192.168.43.104'*/, () => console.log("Listening on port 3000!"));
+  app.listen(3001/*,'192.168.43.104'*/, () => console.log("Listening on port 3000!"));
 });

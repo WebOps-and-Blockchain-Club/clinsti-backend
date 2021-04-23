@@ -24,7 +24,7 @@ router.post('/admin', validate, async (req, res) => {
           return res.status(401).send('Invalid Credentials');
       }
 
-      const adminjwtToken = jwtToken(admin.rows[0].user_id, admin.rows[0].admin_password);
+      const adminjwtToken = jwtToken(admin.rows[0].admin_id, admin.rows[0].admin_password);
 
       return res.status(200).cookie("token", adminjwtToken, {httpOnly:true, maxAge:1000*60*60*24*3 }).json(true);
   } catch (e) {
