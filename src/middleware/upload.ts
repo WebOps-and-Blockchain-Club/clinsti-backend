@@ -4,7 +4,7 @@ import path from 'path'
 
 const MEGABYTE_LIMIT = 5
 const FILE_LIMIT = 5
-const SUPPORTED_EXT = ['.jpg', 'jpeg', '.png', ]
+const SUPPORTED_EXT = ['.jpg', '.jpeg', '.png', ]
 
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,

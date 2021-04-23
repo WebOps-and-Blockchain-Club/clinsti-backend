@@ -53,16 +53,26 @@ function isValid(req: any, res: any, next: any) {
 
         if (req.method === "POST"){
             // Validates Create complaint
-            const {description, location} = req.body
+            const {description, location, wasteType, zone} = req.body
             if (!description || !location){
                 fileManager.deleteFiles(fileManager.extractFilenames(req))
                 return res.status(400).send("Description or Location is empty")
             }
             if (typeof(description) !== "string"){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
                 return res.status(400).send("Expected descriptiion type for rating")
             }
             if (typeof(location) !== "string"){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
                 return res.status(400).send("Expected location type for remark")
+            }
+            if (!['Academics','Hostel','Other'].includes(zone)){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
+                return res.status(400).send("Invalid zone")
+            }
+            if (!['Plastic','Debris','Other'].includes(wasteType)){
+                fileManager.deleteFiles(fileManager.extractFilenames(req))
+                return res.status(400).send("Invalid waste type")
             }
             if (!validator.isLength(description,{min:5})){
                 fileManager.deleteFiles(fileManager.extractFilenames(req))
