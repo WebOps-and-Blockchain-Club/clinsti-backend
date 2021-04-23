@@ -22,7 +22,7 @@ router.get('/admin/complaints/:complaintid', async (req: any,res: any) => {
     }
 })
 
-router.post('/admin/complaints/:complaintid', async (req: any, res: any) => {
+router.patch('/admin/complaints/:complaintid', async (req: any, res: any) => {
     const updateKeys = Object.keys(req.body)
     
     const allowedUpdates = ['status', 'remark']
