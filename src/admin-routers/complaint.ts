@@ -1,9 +1,33 @@
+import adminAuth from '../middleware/admin-auth'
 import express from 'express'
 import admin from '../../postgres'
 
 const router = express.Router()
 
-router.get('/admin/complaints/:complaintid', async (req: any,res: any) => {
+router.get('/admin/complaints', adminAuth, async (req, res) => {
+
+    const {status, zone, dateFrom, dateTo} = req.body;
+
+    try{
+        const result = await admin.query(
+            `select _location, created_time, status from complaints 
+            where status IN ${status} and 
+            zone IN ${zone} and
+            created_time >= '${dateFrom}' and
+            created_time <= '${dateTo}'`
+        );
+        
+        if(result.rowCount === 0){
+            return res.status(404).send('No Complaint Registered yet!')
+        }
+        return res.status(200).send(result.rows);
+    }
+    catch (e) {
+        return res.status(500).send('Server Error');
+    }
+});
+
+router.get('/admin/complaints/:complaintid', adminAuth, async (req: any,res: any) => {
     try {
         const result = await admin.query(
             'select * from complaints where complaint_id = $1',
@@ -22,7 +46,7 @@ router.get('/admin/complaints/:complaintid', async (req: any,res: any) => {
     }
 })
 
-router.patch('/admin/complaints/:complaintid', async (req: any, res: any) => {
+router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: any) => {
     const updateKeys = Object.keys(req.body)
     
     const allowedUpdates = ['status', 'remark']
