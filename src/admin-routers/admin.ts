@@ -25,12 +25,15 @@ router.post('/admin', validate, async (req, res) => {
       }
 
       const adminjwtToken = jwtToken(admin.rows[0].user_id, admin.rows[0].admin_password);
-      const admin_name = admin.rows[0].admin_name
 
-      return res.status(200).send({admin_name, adminjwtToken});
+      return res.status(200).cookie("token", adminjwtToken, {httpOnly:true, maxAge:1000*60*60*24*3 }).json(true);
   } catch (e) {
       return res.status(500).send(e.detail)
   }
+});
+
+router.delete('/admin', async(_req ,res) => {
+  res.cookie("token", "", { httpOnly:true, maxAge:1 }).json(false)
 });
 
 export default router
