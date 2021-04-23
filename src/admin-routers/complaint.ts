@@ -1,18 +1,20 @@
 import express from 'express';
 import client from '../../postgres';
-import adminAuth from '../middleware/admin-auth';
+//import adminAuth from '../middleware/admin-auth';
 
 const router = express.Router();
 
-router.get('/admin/complaints', adminAuth, async (req, res) => {
+router.get('/admin/complaints',/* adminAuth,*/ async (req, res) => {
 
-    const {status, zone} = req.body;
+    const {status, zone, dateFrom, dateTo} = req.body;
 
     try{
         const result = await client.query(
-            `select _location, created_time, status from complaints 
+            `select complaint_id, created_time, status from complaints 
             where status IN ${status} and 
-            zone IN ${zone}`
+            zone IN ${zone} and
+            created_time >= '${dateFrom}' and
+            created_time <= '${dateTo}'`
         );
         
         if(result.rowCount === 0){
