@@ -1,10 +1,10 @@
 import express from 'express';
 import client from '../../postgres';
-//import adminAuth from '../middleware/admin-auth';
+import adminAuth from '../middleware/admin-auth';
 
 const router = express.Router();
 
-router.get('/admin/complaints',/* adminAuth,*/ async (req, res) => {
+router.get('/admin/complaints',adminAuth, async (req, res) => {
 
     const {status, zone, dateFrom, dateTo} = req.body;
 
