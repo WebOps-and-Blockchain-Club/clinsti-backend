@@ -5,28 +5,56 @@ import admin from '../../postgres'
 const router = express.Router()
 
 router.get('/admin/complaints', adminAuth, async (req, res) => {
-
-    const {status, zone, dateFrom, dateTo} = req.body;
+    
+    const zone = req.query.zone?.toString().split(',')
+    const status = req.query.status?.toString().split(',')
+    let dateFrom = req.query.dateFrom
+    let dateTo = req.query.dateTo
+    
+    const reqLimit = req.query.limit?.toString()
+    const reqSkip = req.query.skip?.toString()
+    let limit = 10
+    let skip = 0
 
     const setValuesZone : string[] = []
-    zone.forEach((_zone: string) => {
-        setValuesZone.push("'" + _zone + "'")
-    });
-    const zoneStr = "(" + setValuesZone.join(',') + ")"
-   
+    let zoneStr = "('Hostel','Academics','Other')";
+    if(zone){
+        zone?.forEach((_zone: string) => {
+            setValuesZone.push("'" + _zone + "'")
+        });
+        zoneStr = "(" + setValuesZone.join(',') + ")"
+    }
+    
     const setValuesStatus : string[] = []
-    status.forEach((_status: string) => {
-        setValuesStatus.push("'" + _status + "'")
-    });
-    const statusStr = "(" + setValuesStatus.join(',') + ")"
+    let statusStr = "('posted','processing','invalid complaint', 'completed')"
+    if(status){
+        status?.forEach((_status: string) => {
+            setValuesStatus.push("'" + _status + "'")
+        });
+        statusStr = "(" + setValuesStatus.join(',') + ")"
+    }
 
+    if(!dateFrom) {
+        dateFrom = new Date(2020-1-1).toISOString()
+    }
+    if(!dateTo) {
+        dateTo = new Date().toISOString()
+    }
+
+    if(reqLimit && reqSkip) {
+        limit = parseInt(reqLimit)
+        skip = parseInt(reqSkip)
+    }
+    
     try{
         const result = await admin.query(
             `select _location, created_time, status from complaints 
             where status IN ${statusStr} and 
             zone IN ${zoneStr} and
             created_time >= '${dateFrom}' and
-            created_time <= '${dateTo}'`
+            created_time <= '${dateTo}' 
+            order by created_time 
+            OFFSET ${skip} LIMIT ${limit}`
         );
         
         if(result.rowCount === 0){
