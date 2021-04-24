@@ -8,11 +8,23 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
 
     const {status, zone, dateFrom, dateTo} = req.body;
 
+    const setValuesZone : string[] = []
+    zone.forEach((_zone: string) => {
+        setValuesZone.push("'" + _zone + "'")
+    });
+    const zoneStr = "(" + setValuesZone.join(',') + ")"
+   
+    const setValuesStatus : string[] = []
+    status.forEach((_status: string) => {
+        setValuesStatus.push("'" + _status + "'")
+    });
+    const statusStr = "(" + setValuesStatus.join(',') + ")"
+
     try{
         const result = await admin.query(
             `select _location, created_time, status from complaints 
-            where status IN ${status} and 
-            zone IN ${zone} and
+            where status IN ${statusStr} and 
+            zone IN ${zoneStr} and
             created_time >= '${dateFrom}' and
             created_time <= '${dateTo}'`
         );
