@@ -48,7 +48,7 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
     
     try{
         const result = await admin.query(
-            `select _location, created_time, status from complaints 
+            `select complaint_id, _location, created_time, status from complaints 
             where status IN ${statusStr} and 
             zone IN ${zoneStr} and
             created_time >= '${dateFrom}' and
