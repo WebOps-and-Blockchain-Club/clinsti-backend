@@ -1,6 +1,7 @@
 import adminAuth from '../middleware/admin-auth'
 import express from 'express'
 import admin from '../../postgres'
+const Json2csvParser = require('json2csv').Parser;
 
 const router = express.Router()
 
@@ -26,7 +27,7 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
     }
     
     const setValuesStatus : string[] = []
-    let statusStr = "('posted','processing','invalid complaint', 'completed')"
+    let statusStr = "('posted','processing','invalid_complaint', 'completed')"
     if(status){
         status?.forEach((_status: string) => {
             setValuesStatus.push("'" + _status + "'")
@@ -34,18 +35,12 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
         statusStr = "(" + setValuesStatus.join(',') + ")"
     }
 
-    if(!dateFrom) {
-        dateFrom = new Date(2020-1-1).toISOString()
-    }
-    if(!dateTo) {
-        dateTo = new Date().toISOString()
-    }
+    if(!dateFrom) dateFrom = new Date(2020-1-1).toISOString()
+    if(!dateTo) dateTo = new Date().toISOString()
 
-    if(reqLimit && reqSkip) {
-        limit = parseInt(reqLimit)
-        skip = parseInt(reqSkip)
-    }
-    
+    if(reqLimit) limit = parseInt(reqLimit)
+    if(reqSkip) skip = parseInt(reqSkip)
+  
     try{
         const result = await admin.query(
             `select complaint_id, _location, created_time, status from complaints 
@@ -53,7 +48,7 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
             zone IN ${zoneStr} and
             created_time >= '${dateFrom}' and
             created_time <= '${dateTo}' 
-            order by created_time 
+            order by created_time DESC 
             OFFSET ${skip} LIMIT ${limit}`
         );
         
@@ -106,7 +101,7 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
         setValues.push(`admin_remark = '${req.body.remark}'`)
     }
 
-    if (req.body.status === "Completed"){
+    if (req.body.status === "completed"){
         setValues.push(`completed_time = '${new Date().toISOString()}'`)
     } else if (req.body.status){
         setValues.push(`completed_time = null`)
@@ -118,6 +113,24 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
     } catch (e)
     {
         return res.status(500).send(e.detail)
+    }
+
+})
+
+router.get('/admin/report', adminAuth, async (_req, res) => {
+
+    try {
+        const result = await admin.query("SELECT * FROM complaints")
+
+        const jsonData = JSON.parse(JSON.stringify(result.rows));
+        const json2csvParser = new Json2csvParser();
+        const csvData = json2csvParser.parse(jsonData);
+        
+        res.setHeader('Content-disposition', 'attachment; filename=complaints.csv');
+        res.set('Content-Type', 'text/csv');
+        res.status(200).end(csvData);
+    } catch {
+        res.status(500).send('Server Error')
     }
 
 })
