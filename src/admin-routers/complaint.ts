@@ -126,8 +126,8 @@ router.get('/admin/report', adminAuth, async (req, res) => {
         const setValues: string[] = []
         if(zoneStr) setValues.push('zone IN ' + zoneStr)
         if(statusStr) setValues.push('status IN ' + statusStr)
-        if(dateFrom) setValues.push('created_time >= ' + dateFrom)
-        if(dateTo) setValues.push('created_time <= ' + dateTo)
+        if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
+        if(dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
 
         let queryStr = 'select complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, feedback_rating, feedback_remark, admin_remark from complaints '
