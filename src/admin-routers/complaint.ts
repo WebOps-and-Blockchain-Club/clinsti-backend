@@ -112,6 +112,37 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
 
 })
 
+router.get('/admin/piechart', adminAuth, async (_req, res) => {
+
+    const zone = ['0', 'Academics','Hostel','Other']
+    const status = ["posted", "processing", "invalid_complaint", "completed"]
+    const waste_type = ['Plastic','Debris','Other']
+
+    try {
+        let setJSONValues : string[] = []
+        for (const _zone of zone) {
+            let setValues : string[] = []
+            let queryStr = 'select * from complaints where '
+            if(_zone != zone[0]) queryStr += "zone = '" + _zone + "' and "
+
+            for ( const _status of status) {
+                const result = await admin.query(queryStr + `status = '${_status}'`)
+                setValues.push(`"${_status}": ${result.rowCount}`)
+            }
+
+            for ( const _waste_type of waste_type) {
+                const result = await admin.query(queryStr + `waste_type = '${_waste_type}'`)
+                setValues.push(`"${_waste_type}": ${result.rowCount}`)
+            }
+
+            setJSONValues.push(JSON.parse('{' + setValues.join(",") + '}'))
+        }
+        res.status(200).send({'All Zones':setJSONValues[0],'Academics Zone':setJSONValues[1],'Hostel Zone':setJSONValues[2],'Other Zone':setJSONValues[3]})
+    } catch {
+        res.status(500).send('Server Error')
+    }
+})
+
 router.get('/admin/report', adminAuth, async (req, res) => {
 
     const zone = req.query.zone?.toString().split(',')
