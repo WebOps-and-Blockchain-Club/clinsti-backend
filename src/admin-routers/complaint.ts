@@ -5,8 +5,18 @@ const Json2csvParser = require('json2csv').Parser;
 
 const router = express.Router()
 
+const strFun = (query: any) => {
+    const setValues : string[] = []
+    if(!query){
+        return;
+    }
+    query?.forEach((_query: string) => {
+        setValues.push("'" +_query + "'")
+    });
+    return "(" + setValues.join(',') + ")"
+}
+
 router.get('/admin/complaints', adminAuth, async (req, res) => {
-    
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
     let dateFrom = req.query.dateFrom
@@ -17,40 +27,25 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
     let limit = 10
     let skip = 0
 
-    const setValuesZone : string[] = []
-    let zoneStr = "('Hostel','Academics','Other')";
-    if(zone){
-        zone?.forEach((_zone: string) => {
-            setValuesZone.push("'" + _zone + "'")
-        });
-        zoneStr = "(" + setValuesZone.join(',') + ")"
-    }
-    
-    const setValuesStatus : string[] = []
-    let statusStr = "('posted','processing','invalid_complaint', 'completed')"
-    if(status){
-        status?.forEach((_status: string) => {
-            setValuesStatus.push("'" + _status + "'")
-        });
-        statusStr = "(" + setValuesStatus.join(',') + ")"
-    }
-
-    if(!dateFrom) dateFrom = new Date(2020-1-1).toISOString()
-    if(!dateTo) dateTo = new Date().toISOString()
+    const zoneStr = strFun(zone)
+    const statusStr = strFun(status)
 
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
   
     try{
-        const result = await admin.query(
-            `select complaint_id, _location, created_time, status from complaints 
-            where status IN ${statusStr} and 
-            zone IN ${zoneStr} and
-            created_time >= '${dateFrom}' and
-            created_time <= '${dateTo}' 
-            order by created_time DESC 
-            OFFSET ${skip} LIMIT ${limit}`
-        );
+        const setValues: string[] = []
+        if(zoneStr) setValues.push('zone IN ' + zoneStr)
+        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
+        if(dateTo) setValues.push(`created_time <= '${dateTo}'`)
+        const queryStr1 = setValues.join(' and ')
+
+        let queryStr = 'select complaint_id, _location, created_time, status from complaints '
+        if(queryStr1) queryStr += 'where '+ queryStr1
+        queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
+       
+        const result = await admin.query(queryStr)
         
         if(result.rowCount === 0){
             return res.status(404).send('No Complaint Registered yet!')
@@ -117,10 +112,29 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
 
 })
 
-router.get('/admin/report', adminAuth, async (_req, res) => {
+router.get('/admin/report', adminAuth, async (req, res) => {
+
+    const zone = req.query.zone?.toString().split(',')
+    const status = req.query.status?.toString().split(',')
+    let dateFrom = req.query.dateFrom
+    let dateTo = req.query.dateTo
+
+    const zoneStr = strFun(zone)
+    const statusStr = strFun(status)
 
     try {
-        const result = await admin.query("SELECT * FROM complaints")
+        const setValues: string[] = []
+        if(zoneStr) setValues.push('zone IN ' + zoneStr)
+        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(dateFrom) setValues.push('created_time >= ' + dateFrom)
+        if(dateTo) setValues.push('created_time <= ' + dateTo)
+        const queryStr1 = setValues.join(' and ')
+
+        let queryStr = 'select complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, feedback_rating, feedback_remark, admin_remark from complaints '
+        if(queryStr1) queryStr += 'where '+ queryStr1
+        queryStr += ' order by created_time DESC'
+
+        const result = await admin.query(queryStr)
 
         const jsonData = JSON.parse(JSON.stringify(result.rows));
         const json2csvParser = new Json2csvParser();
