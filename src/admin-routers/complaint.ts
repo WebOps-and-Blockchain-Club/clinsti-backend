@@ -1,6 +1,9 @@
 import adminAuth from '../middleware/admin-auth'
 import express from 'express'
 import admin from '../../postgres'
+import fileManager from '../Utils/file'
+import path from 'path'
+
 const Json2csvParser = require('json2csv').Parser;
 
 const router = express.Router()
@@ -178,6 +181,21 @@ router.get('/admin/report', adminAuth, async (req, res) => {
         res.status(500).send('Server Error')
     }
 
+})
+
+router.get('/admin/images/:imagename', async (req, res) => {
+
+    try {
+        const imagePath = path.join(fileManager.imageDirectory, req.headers.userid+'_'+req.params.imagename);
+
+        if(!fileManager.isFileExists(imagePath)) {
+            return res.status(404).send('File doesnot Exists')
+        }
+
+        return res.status(200).sendFile(imagePath);
+    } catch {
+        return res.status(500).send('Server Error')
+    }
 })
 
 export default router
