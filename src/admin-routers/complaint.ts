@@ -183,7 +183,7 @@ router.get('/admin/report', adminAuth, async (req, res) => {
 
 })
 
-router.get('/admin/images/:imagename', async (req, res) => {
+router.get('/admin/images/:imagename', adminAuth, async (req, res) => {
 
     try {
         const imagePath = path.join(fileManager.imageDirectory, req.headers.userid+'_'+req.params.imagename);
