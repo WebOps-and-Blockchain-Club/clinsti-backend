@@ -25,7 +25,7 @@ router.get('/admin/feedback',adminAuth, async (req, res) => {
         const setValues: string[] = []
         if(feedback_typeStr) setValues.push('feedback_type IN ' + feedback_typeStr)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
-        if(dateTo) setValues.push(`created_time <= '${dateTo}'`)
+        if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
 
         let queryStr = 'select * from feedback '
