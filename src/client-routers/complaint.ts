@@ -5,19 +5,9 @@ import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
 import path from 'path';
 import upload from  '../middleware/upload'
+import queryValueStrFun from '../Utils/queryValue'
 
 const router = express.Router();
-
-const strFun = (query: any) => {
-    const setValues : string[] = []
-    if(!query){
-        return;
-    }
-    query?.forEach((_query: string) => {
-        setValues.push("'" +_query + "'")
-    });
-    return "(" + setValues.join(',') + ")"
-}
 
 router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
     const {description, location, wasteType, zone} = req.body
@@ -76,15 +66,15 @@ router.get('/client/complaints', auth, async (req, res) => {
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
     let dateFrom = req.query.dateFrom
-    let dateTo = req.query.dateTo
+    let dateTo = req.query.dateTo + 'T23:59:59.999Z'
     
     const reqLimit = req.query.limit?.toString()
     const reqSkip = req.query.skip?.toString()
     let limit = 10
     let skip = 0
 
-    const zoneStr = strFun(zone)
-    const statusStr = strFun(status)
+    const zoneStr = queryValueStrFun(zone)
+    const statusStr = queryValueStrFun(status)
 
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
