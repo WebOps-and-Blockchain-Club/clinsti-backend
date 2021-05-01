@@ -136,7 +136,7 @@ router.get('/admin/piechart', adminAuth, async (_req, res) => {
     }
 })
 
-router.get('/admin/report', adminAuth, async (req, res) => {
+router.get('/admin/report'/*, adminAuth*/, async (req, res) => {
 
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
@@ -159,6 +159,11 @@ router.get('/admin/report', adminAuth, async (req, res) => {
         queryStr += ' order by created_time DESC'
 
         const result = await admin.query(queryStr)
+
+        result.rows.forEach((_rows) => {
+            _rows.created_time = new Date(_rows.created_time).toLocaleString()
+            if(_rows.completed_time) _rows.completed_time = new Date(_rows.completed_time).toLocaleString()
+        })
 
         const jsonData = JSON.parse(JSON.stringify(result.rows));
         const json2csvParser = new Json2csvParser();
