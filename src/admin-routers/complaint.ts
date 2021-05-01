@@ -3,35 +3,25 @@ import express from 'express'
 import admin from '../../postgres'
 import fileManager from '../Utils/file'
 import path from 'path'
+import queryValueStrFun from '../Utils/queryValue'
 
 const Json2csvParser = require('json2csv').Parser;
 
 const router = express.Router()
 
-const strFun = (query: any) => {
-    const setValues : string[] = []
-    if(!query){
-        return;
-    }
-    query?.forEach((_query: string) => {
-        setValues.push("'" +_query + "'")
-    });
-    return "(" + setValues.join(',') + ")"
-}
-
 router.get('/admin/complaints', adminAuth, async (req, res) => {
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
     let dateFrom = req.query.dateFrom
-    let dateTo = req.query.dateTo
+    let dateTo = req.query.dateTo + 'T23:59:59.999Z'
     
     const reqLimit = req.query.limit?.toString()
     const reqSkip = req.query.skip?.toString()
     let limit = 10
     let skip = 0
 
-    const zoneStr = strFun(zone)
-    const statusStr = strFun(status)
+    const zoneStr = queryValueStrFun(zone)
+    const statusStr = queryValueStrFun(status)
 
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
@@ -41,7 +31,7 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
         if(zoneStr) setValues.push('zone IN ' + zoneStr)
         if(statusStr) setValues.push('status IN ' + statusStr)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
-        if(dateTo) setValues.push(`created_time <= '${dateTo}'`)
+        if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
 
         let queryStr = 'select complaint_id, _location, created_time, status from complaints '
@@ -71,8 +61,8 @@ router.get('/admin/complaints/:complaintid', adminAuth, async (req: any,res: any
             return res.status(404).send('Complaint Not Found');
         }
 
-        const {complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
-        return res.status(200).send({complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
+        const {complaint_id,user_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
+        return res.status(200).send({complaint_id,user_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
 
     } catch (e) {
         return res.status(500).send('Server Error')
@@ -146,22 +136,22 @@ router.get('/admin/piechart', adminAuth, async (_req, res) => {
     }
 })
 
-router.get('/admin/report', adminAuth, async (req, res) => {
+router.get('/admin/report'/*, adminAuth*/, async (req, res) => {
 
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
     let dateFrom = req.query.dateFrom
-    let dateTo = req.query.dateTo
+    let dateTo = req.query.dateTo + 'T23:59:59.999Z'
 
-    const zoneStr = strFun(zone)
-    const statusStr = strFun(status)
+    const zoneStr = queryValueStrFun(zone)
+    const statusStr = queryValueStrFun(status)
 
     try {
         const setValues: string[] = []
         if(zoneStr) setValues.push('zone IN ' + zoneStr)
         if(statusStr) setValues.push('status IN ' + statusStr)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
-        if(dateTo) setValues.push(`created_time <= '${dateTo}'`)
+        if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
 
         let queryStr = 'select complaint_id, description, _location, waste_type, zone, status, created_time, completed_time, feedback_rating, feedback_remark, admin_remark from complaints '
@@ -169,6 +159,11 @@ router.get('/admin/report', adminAuth, async (req, res) => {
         queryStr += ' order by created_time DESC'
 
         const result = await admin.query(queryStr)
+
+        result.rows.forEach((_rows) => {
+            _rows.created_time = new Date(_rows.created_time).toLocaleString()
+            if(_rows.completed_time) _rows.completed_time = new Date(_rows.completed_time).toLocaleString()
+        })
 
         const jsonData = JSON.parse(JSON.stringify(result.rows));
         const json2csvParser = new Json2csvParser();
@@ -186,7 +181,7 @@ router.get('/admin/report', adminAuth, async (req, res) => {
 router.get('/admin/images/:imagename', adminAuth, async (req, res) => {
 
     try {
-        const imagePath = path.join(fileManager.imageDirectory, req.headers.userid+'_'+req.params.imagename);
+        const imagePath = path.join(fileManager.imageDirectory,req.params.imagename);
 
         if(!fileManager.isFileExists(imagePath)) {
             return res.status(404).send('File doesnot Exists')

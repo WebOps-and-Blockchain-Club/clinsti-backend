@@ -5,6 +5,7 @@ import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
 import path from 'path';
 import upload from  '../middleware/upload'
+import queryValueStrFun from '../Utils/queryValue'
 
 const router = express.Router();
 
@@ -61,11 +62,37 @@ router.get('/client/complaints/:complaintid', auth, async (req, res) => {
 })
 
 router.get('/client/complaints', auth, async (req, res) => {
+
+    const zone = req.query.zone?.toString().split(',')
+    const status = req.query.status?.toString().split(',')
+    let dateFrom = req.query.dateFrom
+    let dateTo = req.query.dateTo + 'T23:59:59.999Z'
+    
+    const reqLimit = req.query.limit?.toString()
+    const reqSkip = req.query.skip?.toString()
+    let limit = 10
+    let skip = 0
+
+    const zoneStr = queryValueStrFun(zone)
+    const statusStr = queryValueStrFun(status)
+
+    if(reqLimit) limit = parseInt(reqLimit)
+    if(reqSkip) skip = parseInt(reqSkip)
+    
     try{
-        const result = await client.query(
-            'select complaint_id, _location, created_time, status from complaints where user_id = $1',
-            [req.headers.userID]
-        );
+        const setValues: string[] = []
+        if(zoneStr) setValues.push('zone IN ' + zoneStr)
+        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
+        if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
+        const queryStr1 = setValues.join(' and ')
+
+        let queryStr = 'select complaint_id, _location, created_time, status from complaints '
+        if(queryStr1) queryStr += 'where '+ queryStr1
+        queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
+       
+        const result = await client.query(queryStr)
+
         if(result.rowCount === 0){
             return res.status(404).send('No Complaint Registered yet!')
         }
