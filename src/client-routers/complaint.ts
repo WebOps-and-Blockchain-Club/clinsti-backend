@@ -137,16 +137,16 @@ router.delete('/client/complaints/:complaintid', auth, async (req, res) => {
             }
 
             const {
-                // user_id,
+                user_id,
                 status, images} = result.rows[0];
 
-            if (status == 'completed'){
-                return res.status(401).send('Cannot Delete Completed Request')
+            if (status == 'Work is Pending'){
+                return res.status(401).send('Cannot Delete Pending Complaint')
             }
 
             if(images != null){
                 fileManager.deleteFiles(images.map((im: string) =>
-                // user_id+"-"+
+                user_id+"_"+
                 im));
             }
 
