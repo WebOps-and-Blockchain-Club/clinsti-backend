@@ -167,8 +167,8 @@ router.delete('/client/complaints/:complaintid', auth, async (req, res) => {
                 user_id,
                 status, images} = result.rows[0];
 
-            if (status == 'Work is Pending'){
-                return res.status(401).send('Cannot Delete Pending Complaint')
+            if (status !== 'Pending Transmission'){
+                return res.status(401).send(`Cannot Delete Complaint with status ${status}`)
             }
 
             if(images != null){
