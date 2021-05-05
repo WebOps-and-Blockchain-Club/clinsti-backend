@@ -10,7 +10,7 @@ import adminComplaintRouter from './src/admin-routers/complaint'
 import feedbackRouter from "./src/client-routers/feedback"
 import adminFeedbackRouter from "./src/admin-routers/feedback"
 
-const cors = require('cors');
+import cors from 'cors';
 
 
 const app = express();
