@@ -5,7 +5,6 @@ import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
 import path from 'path';
 import upload from  '../middleware/upload'
-import queryValueStrFun from '../Utils/queryValue'
 import { statusValues } from '../config';
 
 const router = express.Router();
@@ -74,16 +73,13 @@ router.get('/client/complaints', auth, async (req, res) => {
     let limit = 10
     let skip = 0
 
-    const zoneStr = queryValueStrFun(zone)
-    const statusStr = queryValueStrFun(status)
-
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
     
     try{
         const setValues: string[] = []
-        if(zoneStr) setValues.push('zone IN ' + zoneStr)
-        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(zone) setValues.push(`zone IN ('${zone.join("','")}') `)
+        if(status) setValues.push(`status IN ('${status.join("','")}') `)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
         if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
