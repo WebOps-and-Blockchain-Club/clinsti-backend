@@ -1,15 +1,16 @@
 import express from 'express';
 import client from '../../postgres';
-import validate from '../middleware/validator'
+import { isComplaintFeedbackValid, isNewComplaintValid } from '../middleware/validator'
 import fileManager from '../Utils/file'
 import auth from '../middleware/auth';
 import path from 'path';
 import upload from  '../middleware/upload'
 import queryValueStrFun from '../Utils/queryValue'
+import { statusValues } from '../config';
 
 const router = express.Router();
 
-router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
+router.post('/client/complaints',auth, upload, isNewComplaintValid, async (req, res) => {
     const {description, location, wasteType, zone} = req.body
 
     var filenames = fileManager.extractFilenames(req)
@@ -25,7 +26,7 @@ router.post('/client/complaints',auth ,upload, validate,async (req, res) => {
         : 'null'
     
     try {
-        await client.query(`insert into complaints (user_id,description,_location,waste_type,zone,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','${wasteType}','${zone}','posted','${createdTime}',${imagefilenames})`)
+        await client.query(`insert into complaints (user_id,description,_location,waste_type,zone,status,created_time,images) values ('${req.headers.userID}','${description}','${location}','${wasteType}','${zone}','${statusValues[0]}','${createdTime}',${imagefilenames})`)
     } catch (e)
     {
         fileManager.deleteFiles(filenames)
@@ -118,19 +119,20 @@ router.get('/client/images/:imagename', auth, async (req, res) => {
     }
 })
 
-router.post('/client/complaints/:complaintid/feedback', auth, validate, async (req, res)=>{
+router.post('/client/complaints/:complaintid/feedback', auth, isComplaintFeedbackValid, async (req, res)=>{
 
     const complaintId = req.params.complaintid
     const {fbRating, fbRemark} = req.body
 
     try {
-        const queryResult = await client.query(`select user_id,feedback_rating from complaints where complaint_id=${complaintId}`)
+        const queryResult = await client.query(`select user_id,status, feedback_rating from complaints where complaint_id=${complaintId}`)
         if (!queryResult.rows[0]){
             return res.status(404).send()
         }
 
+        if (queryResult.rows[0].status !== statusValues[3] && queryResult.rows[0].status !== statusValues[4]) return res.status(400).send(`Fill feedback after complaint is solved, Complaint is with status ${queryResult.rows[0].status}`)
+
         const complaintUserId = queryResult.rows[0].user_id
-        
         if (complaintUserId === req.headers.userID){
             if (queryResult.rows[0].feedback_rating){
                 return res.status(403).send("Feedback already submitted")
@@ -167,7 +169,7 @@ router.delete('/client/complaints/:complaintid', auth, async (req, res) => {
                 user_id,
                 status, images} = result.rows[0];
 
-            if (status !== 'Pending Transmission'){
+            if (status !== statusValues[0]){
                 return res.status(401).send(`Cannot Delete Complaint with status ${status}`)
             }
 

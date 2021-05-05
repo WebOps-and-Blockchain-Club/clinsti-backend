@@ -1,13 +1,13 @@
 import express from "express";
 import client from "../../postgres";
 import jwtToken from "../Utils/jwt";
-import validate from "../middleware/validator";
+import { isSignINValid } from "../middleware/validator";
 
 const bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
-router.post('/admin', validate, async (req, res) => {
+router.post('/admin', isSignINValid, async (req, res) => {
   const {email, password} = req.body;
 
   try {

@@ -3,7 +3,8 @@ import express from 'express'
 import admin from '../../postgres'
 import fileManager from '../Utils/file'
 import path from 'path'
-import queryValueStrFun from '../Utils/queryValue'
+import { statusValues, wasteTypeValues, zoneValues } from '../config'
+import { isStatusUpdateValid } from '../middleware/validator'
 
 const Json2csvParser = require('json2csv').Parser;
 
@@ -20,16 +21,13 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
     let limit = 10
     let skip = 0
 
-    const zoneStr = queryValueStrFun(zone)
-    const statusStr = queryValueStrFun(status)
-
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
   
     try{
         const setValues: string[] = []
-        if(zoneStr) setValues.push('zone IN ' + zoneStr)
-        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(zone) setValues.push(`zone IN ('${zone.join("','")}') `)
+        if(status) setValues.push(`status IN ('${status.join("','")}') `)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
         if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
@@ -69,16 +67,7 @@ router.get('/admin/complaints/:complaintid', adminAuth, async (req: any,res: any
     }
 })
 
-router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: any) => {
-    const updateKeys = Object.keys(req.body)
-    
-    const allowedUpdates = ['status', 'remark']
-    
-    const isValidUpdate = updateKeys.every((updateKey) => allowedUpdates.includes(updateKey));
-    
-    if (!isValidUpdate){
-        return res.status(400).send('Invalid Updates')
-    }
+router.patch('/admin/complaints/:complaintid', isStatusUpdateValid, adminAuth, async (req: any, res: any) => {
 
     const setValues : string[] = []
 
@@ -89,7 +78,7 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
         setValues.push(`admin_remark = '${req.body.remark}'`)
     }
 
-    if (req.body.status === "completed"){
+    if (req.body.status === statusValues[3] || req.body.status === statusValues[4]){
         setValues.push(`completed_time = '${new Date().toISOString()}'`)
     } else if (req.body.status){
         setValues.push(`completed_time = null`)
@@ -107,49 +96,42 @@ router.patch('/admin/complaints/:complaintid', adminAuth, async (req: any, res: 
 
 router.get('/admin/piechart', adminAuth, async (_req, res) => {
 
-    const zone = ['0', 'Academics','Hostel','Other']
-    const status = ["posted", "processing", "invalid_complaint", "completed"]
-    const waste_type = ['Plastic','Debris','Other']
-
     try {
         let setJSONValues : string[] = []
-        for (const _zone of zone) {
+        for (const _zone of zoneValues.concat('0')) {
             let setValues : string[] = []
             let queryStr = 'select * from complaints where '
-            if(_zone != zone[0]) queryStr += "zone = '" + _zone + "' and "
+            if(_zone != '0') queryStr += "zone = '" + _zone + "' and "
 
-            for ( const _status of status) {
+            for ( const _status of statusValues) {
                 const result = await admin.query(queryStr + `status = '${_status}'`)
                 setValues.push(`"${_status}": ${result.rowCount}`)
             }
 
-            for ( const _waste_type of waste_type) {
-                const result = await admin.query(queryStr + `waste_type = '${_waste_type}'`)
-                setValues.push(`"${_waste_type}": ${result.rowCount}`)
+            for ( const _wasteType of wasteTypeValues) {
+                const result = await admin.query(queryStr + `waste_type = '${_wasteType}'`)
+                setValues.push(`"${_wasteType}": ${result.rowCount}`)
             }
 
             setJSONValues.push(JSON.parse('{' + setValues.join(",") + '}'))
         }
-        res.status(200).send({'All Zones':setJSONValues[0],'Academics Zone':setJSONValues[1],'Hostel Zone':setJSONValues[2],'Other Zone':setJSONValues[3]})
+        res.status(200).send({'All Zones':setJSONValues[3],'Academics Zone':setJSONValues[0],'Hostel Zone':setJSONValues[1],'Residential Zone':setJSONValues[2]})
     } catch {
         res.status(500).send('Server Error')
     }
 })
 
-router.get('/admin/report'/*, adminAuth*/, async (req, res) => {
+router.get('/admin/report', adminAuth, async (req, res) => {
 
     const zone = req.query.zone?.toString().split(',')
     const status = req.query.status?.toString().split(',')
     let dateFrom = req.query.dateFrom
     let dateTo = req.query.dateTo + 'T23:59:59.999Z'
 
-    const zoneStr = queryValueStrFun(zone)
-    const statusStr = queryValueStrFun(status)
-
     try {
         const setValues: string[] = []
-        if(zoneStr) setValues.push('zone IN ' + zoneStr)
-        if(statusStr) setValues.push('status IN ' + statusStr)
+        if(zone) setValues.push(`zone IN ('${zone.join("','")}') `)
+        if(status) setValues.push(`status IN ('${status.join("','")}') `)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
         if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
