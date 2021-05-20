@@ -78,6 +78,7 @@ router.get('/client/complaints', auth, async (req, res) => {
     
     try{
         const setValues: string[] = []
+        setValues.push(`user_id = '${req.headers.userID}'`)
         if(zone) setValues.push(`zone IN ('${zone.join("','")}') `)
         if(status) setValues.push(`status IN ('${status.join("','")}') `)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
