@@ -1,7 +1,6 @@
 import adminAuth from '../middleware/admin-auth'
 import express from 'express'
 import admin from '../../postgres'
-import queryValueStrFun from '../Utils/queryValue'
 
 const router = express.Router()
 
@@ -16,14 +15,12 @@ router.get('/admin/feedback',adminAuth, async (req, res) => {
     let limit = 10
     let skip = 0
 
-    const feedback_typeStr = queryValueStrFun(feedback_type)
-
     if(reqLimit) limit = parseInt(reqLimit)
     if(reqSkip) skip = parseInt(reqSkip)
   
     try{
         const setValues: string[] = []
-        if(feedback_typeStr) setValues.push('feedback_type IN ' + feedback_typeStr)
+        if(feedback_type) setValues.push(`feedback_type IN ('${feedback_type.join("','")}') `)
         if(dateFrom) setValues.push(`created_time >= '${dateFrom}'`)
         if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')

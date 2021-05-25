@@ -1,9 +1,9 @@
 import express from "express";
 import client from "../../postgres";
-import validate from "../middleware/validator";
+import { isFeedbackValid } from "../middleware/validator";
 const router = express.Router();
 
-router.post('/client/feedback', validate, async (req, res) => {
+router.post('/client/feedback', isFeedbackValid, async (req, res) => {
     const {feedback,feedback_type} = req.body
     let createdTime = new Date().toISOString()
 

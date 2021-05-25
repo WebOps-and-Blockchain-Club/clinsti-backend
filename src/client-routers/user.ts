@@ -2,13 +2,13 @@ import express from "express";
 import client from "../../postgres";
 import auth from "../middleware/auth";
 import jwtToken from "../Utils/jwt";
-import validate from "../middleware/validator";
+import { isChangePassValid, isEditProfileValid, isSignINValid, isSignUPValid } from "../middleware/validator";
 
 const bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
-router.post('/client/accounts/signup', validate, async (req, res) => {
+router.post('/client/accounts/signup', isSignUPValid, async (req, res) => {
     const {name, email, password} = req.body
     
     try {
@@ -31,7 +31,7 @@ router.post('/client/accounts/signup', validate, async (req, res) => {
     }
 });
 
-router.post('/client/accounts/signin', validate, async (req, res) => {
+router.post('/client/accounts/signin', isSignINValid, async (req, res) => {
     const {email, password} = req.body;
 
     try {
@@ -71,19 +71,10 @@ router.get('/client/accounts', auth,  async (req, res) => {
     }
 })
 
-router.patch('/client/accounts', auth, validate, async (req, res) => {
-
-    const updatekeys = Object.keys(req.body);
-    //updatekeys.splice(updatekeys.indexOf('userID'), 1);
-
-    const allowedkeyupdates = ['name', 'email'];
-    const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
-
-    if (!isupdates) {
-        return res.status(400).send('Invalid updates!')
-    }
+router.patch('/client/accounts', auth, isEditProfileValid, async (req, res) => {
 
     try {
+        const updatekeys = Object.keys(req.body);
 
         await client.query("BEGIN");
 
@@ -100,7 +91,7 @@ router.patch('/client/accounts', auth, validate, async (req, res) => {
     }
 })
 
-router.post('/client/accounts/changepassword', auth, validate, async (req, res) => {
+router.post('/client/accounts/changepassword', auth, isChangePassValid, async (req, res) => {
     const {oldPassword, newPassword} = req.body;
 
     try {
