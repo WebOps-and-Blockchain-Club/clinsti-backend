@@ -9,7 +9,7 @@ const SUPPORTED_EXT = ['.jpg', '.jpeg', '.png', ]
 var storage = multer.diskStorage({
     destination: fileManager.imageDirectory,
     filename: function(req,file,cb) {
-        const filetype = file['mimetype'].split('/')[1]
+        const filetype = path.extname(file.originalname)
         const filename = fileManager.createFilename(filetype, req.headers.userID)
         cb(null, filename)
     },
