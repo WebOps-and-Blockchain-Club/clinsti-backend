@@ -29,5 +29,5 @@ client.connect().then(() => {
   app.use(adminComplaintRouter)
   app.use(feedbackRouter)
   app.use(adminFeedbackRouter)
-  app.listen(3000/*,'192.168.43.104'*/, () => console.log("Listening on port 3000!"));
+  app.listen(3000, `${process.env.IP}`, () => console.log("Listening on port 3000!"));
 });

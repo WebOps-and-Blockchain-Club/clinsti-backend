@@ -3,10 +3,10 @@ import { statusEnum, wasteTypeEnum, zoneEnum } from "../config";
 
 export class NewComplaint {
     
-    @Length(5,100)
+    @Length(5,300)
     description: string;
 
-    @Length(5,50)
+    @Length(5,150)
     location: string;
 
     @IsEnum(zoneEnum)
@@ -22,7 +22,7 @@ export class ComplaintFeedback {
     @Max(5)
     fbRating: number;
 
-    @Length(5,100)
+    @Length(5,300)
     @IsOptional()
     fbRemark: string;
 }
@@ -32,6 +32,6 @@ export class StatusUpdate {
     status: string;
 
     @IsOptional()
-    @Length(2,200)
+    @Length(2,300)
     remark: string;
 }
