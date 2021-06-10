@@ -19,7 +19,7 @@ client.connect().then(() => {
   console.log("Connected to database");
   app.use(cors({
     credentials:true,
-    origin:"http://localhost:3001"
+    origin:"http://localhost:3003"
   }));
   app.use(express.json())
   app.use(cookieParser())

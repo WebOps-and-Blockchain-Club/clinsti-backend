@@ -90,11 +90,12 @@ router.get('/client/complaints', auth, async (req, res) => {
         queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
        
         const result = await client.query(queryStr)
+        const complaintCount = await client.query(`select COUNT(*) from complaints where ${queryStr1}`)
 
         if(result.rowCount === 0){
             return res.status(404).send('No Complaint Registered yet!')
         }
-        return res.status(200).send(result.rows);
+        return res.status(200).send({"complaintsCount": complaintCount.rows[0].count, "complaints": [result.rows]});
     }
     catch (e) {
         return res.status(500).send('Server Error');

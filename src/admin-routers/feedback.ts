@@ -30,11 +30,12 @@ router.get('/admin/feedback',adminAuth, async (req, res) => {
         queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
 
         const result = await admin.query(queryStr)
+        const feedbackCount = await admin.query(`select COUNT(*) from feedback where ${queryStr1}`)
         
         if(result.rowCount === 0){
             return res.status(404).send('No Feedback yet!')
         }
-        return res.status(200).send(result.rows);
+        return res.status(200).send({"feedbacksCount": feedbackCount.rows[0].count, "feedbacks": [result.rows]});
     }
     catch (e) {
         return res.status(500).send('Server Error');
