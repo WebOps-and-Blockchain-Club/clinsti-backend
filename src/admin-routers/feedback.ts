@@ -35,7 +35,7 @@ router.get('/admin/feedback',adminAuth, async (req, res) => {
         if(result.rowCount === 0){
             return res.status(404).send('No Feedback yet!')
         }
-        return res.status(200).send({"feedbacksCount": feedbackCount.rows[0].count, "feedbacks": [result.rows]});
+        return res.status(200).send({"feedbacksCount": feedbackCount.rows[0].count, "feedbacks": result.rows});
     }
     catch (e) {
         return res.status(500).send('Server Error');
