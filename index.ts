@@ -12,6 +12,8 @@ import adminFeedbackRouter from "./src/admin-routers/feedback"
 
 import cors from 'cors';
 
+// PORT=3000        add to .env
+// PROXY_LINK='http://localhost:3001'
 
 const app = express();
 
@@ -19,7 +21,7 @@ client.connect().then(() => {
   console.log("Connected to database");
   app.use(cors({
     credentials:true,
-    origin:["http://localhost:3001","http://localhost:62442"]
+    origin:process.env.PROXY_LINK
   }));
   app.use(express.json())
   app.use(cookieParser())
@@ -29,5 +31,5 @@ client.connect().then(() => {
   app.use(adminComplaintRouter)
   app.use(feedbackRouter)
   app.use(adminFeedbackRouter)
-  app.listen(3000, () => console.log("Listening on port 3000!"));
+  app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}!`));
 });
