@@ -85,9 +85,8 @@ router.get('/client/complaints', auth, async (req, res) => {
         if(req.query.dateTo) setValues.push(`created_time <= '${dateTo}'`)
         const queryStr1 = setValues.join(' and ')
 
-        let queryStr = 'select complaint_id, _location, created_time, status from complaints '
-        if(queryStr1) queryStr += 'where '+ queryStr1
-        queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
+        let queryStr = 'select complaint_id, _location, created_time, status from complaints where '
+                        + queryStr1 + ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
        
         const result = await client.query(queryStr)
         const complaintCount = await client.query(`select COUNT(*) from complaints where ${queryStr1}`)

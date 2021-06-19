@@ -36,8 +36,12 @@ router.get('/admin/complaints', adminAuth, async (req, res) => {
         if(queryStr1) queryStr += 'where '+ queryStr1
         queryStr += ' order by created_time DESC OFFSET ' + skip + ' LIMIT ' + limit
        
+        console.log(queryStr);
         const result = await admin.query(queryStr)
-        const complaintCount = await admin.query(`select COUNT(*) from complaints where ${queryStr1}`)
+
+        let countQueryStr = 'select COUNT(*) from complaints ';
+        if(queryStr1) countQueryStr += 'where ' + queryStr1;
+        const complaintCount = await admin.query(countQueryStr);
         
         if(result.rowCount === 0){
             return res.status(404).send('No Complaint Registered yet!')
