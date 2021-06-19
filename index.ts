@@ -11,6 +11,7 @@ import feedbackRouter from "./src/client-routers/feedback"
 import adminFeedbackRouter from "./src/admin-routers/feedback"
 
 import cors from 'cors';
+import path from "path";
 
 // PORT=3000        add to .env
 // PROXY_LINK='http://localhost:3001'
@@ -79,5 +80,14 @@ client.connect().then(async () => {
   app.use(adminComplaintRouter)
   app.use(feedbackRouter)
   app.use(adminFeedbackRouter)
+  
+  //frontend
+  app.use(express.static(path.join(__dirname, '../web-admin', "build")));
+  app.use(express.static("public"));
+
+  app.get('/*', function (_req, res) {
+    res.sendFile(path.join(__dirname, '../web-admin', 'build', 'index.html'));
+    console.log(__dirname);
+  })
   app.listen(process.env.PORT, () => console.log(`Listening on port ${process.env.PORT}!`));
 });
