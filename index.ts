@@ -17,8 +17,56 @@ import cors from 'cors';
 
 const app = express();
 
-client.connect().then(() => {
+client.connect().then(async () => {
   console.log("Connected to database");
+
+  await client.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+
+  //create user table
+  await client.query(`CREATE TABLE IF NOT EXISTS users(
+    user_id uuid DEFAULT uuid_generate_v4() UNIQUE,
+    user_name VARCHAR(255) NOT NULL,
+    user_email VARCHAR(255) NOT NULL UNIQUE,
+    user_password VARCHAR(255) NOT NULL,
+    PRIMARY KEY(user_id)
+    );
+  `);
+
+  await client.query(`CREATE TABLE IF NOT EXISTS "admin"(
+    admin_id uuid DEFAULT uuid_generate_v4() UNIQUE,
+    admin_name VARCHAR(255) NOT NULL,
+    admin_email VARCHAR(255) NOT NULL UNIQUE,
+    admin_password VARCHAR(255) NOT NULL,
+    PRIMARY KEY(admin_id)
+    );
+  `);
+
+  await client.query(`CREATE TABLE IF NOT EXISTS complaints(
+    user_id uuid not null,
+    complaint_id serial primary key,
+    description text not null,
+    _location text not null,
+    waste_type text,
+    zone text,
+    status text not null,
+    created_time timestamp with time zone not null,
+    completed_time timestamp with time zone,
+    images text[],
+    foreign key (user_id) references users(user_id),
+    feedback_rating int check(feedback_rating between 1 and 5),
+    feedback_remark text,
+    admin_remark text
+    );
+  `);
+
+  await client.query(`CREATE TABLE IF NOT EXISTS feedback(
+      feedback_id serial primary key,
+      created_time timestamp with time zone not null,
+      feedback text NOT NULL,
+      feedback_type text NOT NULL
+    );
+  `);
+
   app.use(cors({
     credentials:true,
     origin:process.env.PROXY_LINK
