@@ -1,10 +1,10 @@
-import { IsEnum, Length } from "class-validator";
+import { IsEnum, MinLength } from "class-validator";
 import { feedbackTypeEnum } from "../config";
 
 export class Feedback {
-    @IsEnum(feedbackTypeEnum)
+    @IsEnum(feedbackTypeEnum, { message: "Invalid Feedback!" })
     feedback_type: string;
 
-    @Length(5,500)
+    @MinLength(5, { message: "Feedback is too short" })
     feedback: string;
 }

@@ -1,32 +1,32 @@
-import { IsEmail, IsOptional, Length, MinLength, NotContains } from "class-validator";
+import { IsEmail, IsOptional, MinLength, NotContains } from "class-validator";
 
 export class SignUP {
-    @Length(5,10)
+    @MinLength(3, { message: "Username is too short" })
     name: string;
 
-    @IsEmail()
+    @IsEmail({}, { message: "Invalid Email!" })
     email: string;
 
-    @MinLength(5)
-    @NotContains("password")
-    @NotContains("Password")
-    @NotContains("PASSWORD")
+    @MinLength(5, { message: "Enter strong password" })
+    @NotContains("password", { message: "Enter strong password" })
+    @NotContains("Password", { message: "Enter strong password" })
+    @NotContains("PASSWORD", { message: "Enter strong password" })
     password: string;
 }
 
 export class SignIN {
-    @IsEmail()
+    @IsEmail({}, { message: "Invalid Email!" })
     email: string;
 
     password: string;
 }
 
 export class EditProfile {
-    @Length(5,10)
+    @MinLength(3, { message: "Username is too short" })
     @IsOptional()
     name: string;
 
-    @IsEmail()
+    @IsEmail({}, { message: "Invalid Email!" })
     @IsOptional()
     email: string;
 }
@@ -34,9 +34,9 @@ export class EditProfile {
 export class ChangePassword {
     oldPassword: string;
 
-    @MinLength(5)
-    @NotContains("password")
-    @NotContains("Password")
-    @NotContains("PASSWORD")
+    @MinLength(5, { message: "Enter strong password" })
+    @NotContains("password", { message: "Enter strong password" })
+    @NotContains("Password", { message: "Enter strong password" })
+    @NotContains("PASSWORD", { message: "Enter strong password" })
     newPassword: string;
 }

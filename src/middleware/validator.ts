@@ -34,6 +34,8 @@ export function isSignINValid(req: any, res: any, next: any) {
 export function isEditProfileValid(req: any, res: any, next: any) {
     const updatekeys = Object.keys(req.body);
 
+    if(updatekeys.length === 0 ) return res.status(400).send('Invalid updates!')
+
     const allowedkeyupdates = ['name', 'email'];
     const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
 
