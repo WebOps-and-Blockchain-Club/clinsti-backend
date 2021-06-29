@@ -7,6 +7,8 @@ create table complaints(
 	zone text,
 	status text not null,
 	created_time timestamp with time zone not null,
+	registered_time timestamp with time zone,
+    work_started_time timestamp with time zone,
 	completed_time timestamp with time zone,
 	images text[],
 	foreign key (user_id) references users(user_id),

@@ -64,8 +64,8 @@ router.get('/admin/complaints/:complaintid', adminAuth, async (req: any,res: any
             return res.status(404).send('Complaint Not Found');
         }
 
-        const {complaint_id,user_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
-        return res.status(200).send({complaint_id,user_id, description, _location, waste_type, zone, status, created_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
+        const {complaint_id,user_id, description, _location, waste_type, zone, status, created_time, registered_time, work_started_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
+        return res.status(200).send({complaint_id,user_id, description, _location, waste_type, zone, status, created_time, registered_time, work_started_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
 
     } catch (e) {
         return res.status(500).send('Server Error')
@@ -83,10 +83,14 @@ router.patch('/admin/complaints/:complaintid', isStatusUpdateValid, adminAuth, a
         setValues.push(`admin_remark = '${req.body.remark}'`)
     }
 
-    if (req.body.status === statusValues[3] || req.body.status === statusValues[4]){
+    if ( req.body.status === statusValues[0] ) {
+        setValues.push(`registered_time = null, work_started_time = null, completed_time = null`)
+    } else if ( req.body.status === statusValues[1] ) {
+        setValues.push(`registered_time = '${new Date().toISOString()}', work_started_time = null, completed_time = null`)
+    } else if ( req.body.status === statusValues[2] ) {
+        setValues.push(`work_started_time = '${new Date().toISOString()}', completed_time = null`)
+    } else if ( req.body.status === statusValues[3] || req.body.status === statusValues[4] ) {
         setValues.push(`completed_time = '${new Date().toISOString()}'`)
-    } else if (req.body.status){
-        setValues.push(`completed_time = null`)
     }
     
     try {
