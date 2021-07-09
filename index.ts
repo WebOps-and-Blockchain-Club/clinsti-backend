@@ -28,6 +28,7 @@ client.connect().then(async () => {
     user_name VARCHAR(255) NOT NULL,
     user_email VARCHAR(255) NOT NULL UNIQUE,
     user_password VARCHAR(255) NOT NULL,
+    password_otp VARCHAR(10),
     PRIMARY KEY(user_id)
     );
   `);

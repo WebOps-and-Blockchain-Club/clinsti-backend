@@ -8,6 +8,10 @@ const bcrypt = require("bcryptjs");
 
 const router = express.Router();
 
+const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
 router.post('/client/accounts/signup', isSignUPValid, async (req, res) => {
     const {name, email, password} = req.body
     
@@ -116,6 +120,52 @@ router.post('/client/accounts/changepassword', auth, isChangePassValid, async (r
         return res.status(200).send({name, userjwtToken});
     } catch (e) {
         return res.status(400).send("Password Update Failed")
+    }
+})
+
+router.get('/client/accounts/resetpassword', async (req, res) => {
+    const { name, email } = req.body;
+console.log(name);
+console.log(email);
+    try {
+        const user = await client.query(`select * from users where user_name = '${name}' and user_email = '${email}'`);
+        console.log(user);
+        if (user.rows.length === 0) {
+            return res.status(401).send('User not registered')
+        }
+
+        const otp = generateOTP();
+        await client.query(`UPDATE users set password_otp = '${otp}' where user_id = '${user.rows[0].user_id}'`);
+
+        console.log(otp);
+        return res.status(200).send({"message" : "OTP Sent!"});
+
+    } catch (e) {
+        return res.status(500).send(e.detail);
+    }
+})
+
+router.post('/client/accounts/resetpassword', async (req, res) => {
+    const { name, email, otp, password } = req.body;
+
+    try {
+        const user = await client.query(`select * from users where user_name = '${name}' and user_email = '${email}'`);
+
+        if (user.rows.length === 0) {
+            return res.status(401).send('User not registered')
+        }
+
+        if(user.rows[0].password_otp !== otp ) {
+            return res.status(401).send("Invalid OTP!");
+        }
+
+        const bcryptPassword = await bcrypt.hash(password, 10);
+        await client.query(`UPDATE users set user_password = '${bcryptPassword}', password_otp = ${null} where user_id = '${user.rows[0].user_id}'`);
+
+        return res.status(200).send({"message" : "Password updated"});
+
+    } catch (e) {
+        return res.status(500).send(e.detail);
     }
 })
 
