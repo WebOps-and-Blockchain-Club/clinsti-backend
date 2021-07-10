@@ -40,3 +40,21 @@ export class ChangePassword {
     @NotContains("PASSWORD", { message: "Enter strong password" })
     newPassword: string;
 }
+
+export class RequestOTP {
+    @IsEmail({}, { message: "Invalid Email!" })
+    email: string;
+}
+
+export class ResetPass {
+    @IsEmail({}, { message: "Invalid Email!" })
+    email: string;
+
+    otp: string;
+
+    @MinLength(5, { message: "Enter strong password" })
+    @NotContains("password", { message: "Enter strong password" })
+    @NotContains("Password", { message: "Enter strong password" })
+    @NotContains("PASSWORD", { message: "Enter strong password" })
+    password: string;
+}

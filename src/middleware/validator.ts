@@ -1,6 +1,6 @@
 import { Validator } from "class-validator";
 //import validator1 from "validator";
-import { ChangePassword, EditProfile, SignIN, SignUP } from "../Models/Account";
+import { ChangePassword, EditProfile, RequestOTP, ResetPass, SignIN, SignUP } from "../Models/Account";
 //import { wasteTypeValues, zoneValues } from "../config";
 import { StatusUpdate, ComplaintFeedback, NewComplaint } from "../Models/Complaint";
 import { Feedback } from "../Models/Feedback";
@@ -60,6 +60,28 @@ export function isChangePassValid(req: any, res: any, next: any) {
 
     validator.validate(changePassword).then( (result) => {
         if(result.length !==0) if(result[0].constraints) return res.status(400).send((Object.values(result[0].constraints).join(", ")))
+        next()
+    })
+}
+
+export function isRequestOTPValid(req: any, res: any, next: any ) {
+    const requestOTP = new RequestOTP();
+    requestOTP.email = req.body.email;
+
+    validator.validate(requestOTP).then( (result) => {
+        if(result.length !== 0 ) if( result[0].constraints) return res.status(400).send( (Object.values(result[0].constraints).join(", ")))
+        next()
+    })
+}
+
+export function isResetPassValid(req: any, res: any, next: any ) {
+    const resetPass = new ResetPass();
+    resetPass.email = req.body.email;
+    resetPass.otp = req.body.otp;
+    resetPass.password = req.body.password;
+
+    validator.validate(resetPass).then( (result) => {
+        if(result.length !== 0 ) if( result[0].constraints) return res.status(400).send( (Object.values(result[0].constraints).join(", ")))
         next()
     })
 }

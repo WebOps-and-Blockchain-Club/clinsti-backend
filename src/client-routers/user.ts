@@ -2,7 +2,8 @@ import express from "express";
 import client from "../../postgres";
 import auth from "../middleware/auth";
 import jwtToken from "../Utils/jwt";
-import { isChangePassValid, isEditProfileValid, isSignINValid, isSignUPValid } from "../middleware/validator";
+import { isChangePassValid, isEditProfileValid, isRequestOTPValid, isResetPassValid, isSignINValid, isSignUPValid } from "../middleware/validator";
+import { mail } from "./../Utils/mail";
 
 const bcrypt = require("bcryptjs");
 
@@ -123,13 +124,12 @@ router.post('/client/accounts/changepassword', auth, isChangePassValid, async (r
     }
 })
 
-router.get('/client/accounts/resetpassword', async (req, res) => {
-    const { name, email } = req.body;
-console.log(name);
-console.log(email);
+router.get('/client/accounts/resetpassword', isRequestOTPValid, async (req, res) => {
+    const { email } = req.body;
+
     try {
-        const user = await client.query(`select * from users where user_name = '${name}' and user_email = '${email}'`);
-        console.log(user);
+        const user = await client.query(`select * from users where user_email = '${email}'`);
+
         if (user.rows.length === 0) {
             return res.status(401).send('User not registered')
         }
@@ -137,7 +137,8 @@ console.log(email);
         const otp = generateOTP();
         await client.query(`UPDATE users set password_otp = '${otp}' where user_id = '${user.rows[0].user_id}'`);
 
-        console.log(otp);
+        const name = user.rows[0].user_name;
+        await mail({ name, email, otp });
         return res.status(200).send({"message" : "OTP Sent!"});
 
     } catch (e) {
@@ -145,11 +146,11 @@ console.log(email);
     }
 })
 
-router.post('/client/accounts/resetpassword', async (req, res) => {
-    const { name, email, otp, password } = req.body;
+router.post('/client/accounts/resetpassword', isResetPassValid, async (req, res) => {
+    const { email, otp, password } = req.body;
 
     try {
-        const user = await client.query(`select * from users where user_name = '${name}' and user_email = '${email}'`);
+        const user = await client.query(`select * from users where user_email = '${email}'`);
 
         if (user.rows.length === 0) {
             return res.status(401).send('User not registered')
