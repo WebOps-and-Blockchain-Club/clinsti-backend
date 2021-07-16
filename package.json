@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --respawn ./index.ts"
+    "dev": "ts-node-dev --respawn ./index.ts",
+    "build": "rimraf dist && tsc -p .",
+    "start": "ts-node ./index.ts"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
