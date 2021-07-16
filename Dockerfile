@@ -4,5 +4,5 @@ COPY package.json /app
 RUN yarn install
 COPY . /app
 RUN yarn build
-EXPOSE 8081
+EXPOSE 9000
 CMD yarn start
