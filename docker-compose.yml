@@ -13,7 +13,7 @@ services:
     volumes:
       - complaints_cfi_postgres:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "5432:5432"
     networks:
       - db_network
 
@@ -35,6 +35,21 @@ services:
     tty: true
     networks:
       - db_network
+
+  web:
+    container_name: clinsti_server
+    build: .
+    depends_on:
+      - db
+    expose:
+      - '9000'
+    ports:
+      - '9000:9000'
+    networks:
+      - db_network
+    volumes:
+      - .:/myapp
+    command: yarn start
 
 networks:
   db_network:
