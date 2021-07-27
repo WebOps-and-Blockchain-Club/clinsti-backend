@@ -65,7 +65,11 @@ router.get('/admin/complaints/:complaintid', adminAuth, async (req: any,res: any
         }
 
         const {complaint_id,user_id, description, _location, waste_type, zone, status, created_time, registered_time, work_started_time, completed_time, images, feedback_rating, feedback_remark, admin_remark} = result.rows[0];
-        return res.status(200).send({complaint_id,user_id, description, _location, waste_type, zone, status, created_time, registered_time, work_started_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
+
+        const user = await admin.query(`select user_name, user_email from users where user_id = '${user_id}'`);
+        const { user_name, user_email } = user.rows[0];
+        
+        return res.status(200).send({complaint_id, user_name, user_email, description, _location, waste_type, zone, status, created_time, registered_time, work_started_time, completed_time, images, feedback_rating, feedback_remark, admin_remark})
 
     } catch (e) {
         return res.status(500).send('Server Error')
