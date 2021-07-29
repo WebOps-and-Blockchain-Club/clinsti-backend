@@ -48,7 +48,7 @@ services:
     networks:
       - db_network
     volumes:
-      - .:/myapp
+      - .:/app
     command: yarn start
 
 networks:
