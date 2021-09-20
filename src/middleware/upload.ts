@@ -17,7 +17,7 @@ var storage = multer.diskStorage({
 
 function filterImages(_req: any, file: any, cb: any) {
     const extension = path.extname(file.originalname)
-    if (SUPPORTED_EXT.includes(extension)){
+    if (SUPPORTED_EXT.includes(extension.toLocaleLowerCase())){
         return cb(null, true)
     }
     return cb(Error(`File extension not supported; File extensions supported: ${SUPPORTED_EXT}`))
