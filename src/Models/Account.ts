@@ -1,7 +1,6 @@
-import { IsEmail, IsOptional, MinLength, NotContains } from "class-validator";
+import { IsEmail, MinLength, NotContains } from "class-validator";
 
 export class SignUP {
-    @MinLength(3, { message: "Username is too short" })
     name: string;
 
     @IsEmail({}, { message: "Invalid Email!" })
@@ -22,7 +21,6 @@ export class SignIN {
 }
 
 export class EditProfile {
-    @MinLength(3, { message: "Username is too short" })
     name: string;
 }
 
