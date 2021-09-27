@@ -32,20 +32,9 @@ export function isSignINValid(req: any, res: any, next: any) {
 }
 
 export function isEditProfileValid(req: any, res: any, next: any) {
-    const updatekeys = Object.keys(req.body);
-
-    if(updatekeys.length === 0 ) return res.status(400).send('Invalid updates!')
-
-    const allowedkeyupdates = ['name', 'email'];
-    const isupdates = updatekeys.every((updatekey) => allowedkeyupdates.includes(updatekey));
-
-    if (!isupdates) {
-        return res.status(400).send('Invalid updates!')
-    }
 
     const editProfile = new EditProfile()
     editProfile.name = req.body.name;
-    editProfile.email = req.body.email;
 
     validator.validate(editProfile).then( (result) => {
         if(result.length !==0) if(result[0].constraints) return res.status(400).send((Object.values(result[0].constraints).join(", ")))

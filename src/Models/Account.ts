@@ -23,12 +23,7 @@ export class SignIN {
 
 export class EditProfile {
     @MinLength(3, { message: "Username is too short" })
-    @IsOptional()
     name: string;
-
-    @IsEmail({}, { message: "Invalid Email!" })
-    @IsOptional()
-    email: string;
 }
 
 export class ChangePassword {

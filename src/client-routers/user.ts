@@ -77,21 +77,13 @@ router.get('/client/accounts', auth,  async (req, res) => {
 })
 
 router.patch('/client/accounts', auth, isEditProfileValid, async (req, res) => {
-
+    const { name } = req.body;
     try {
-        const updatekeys = Object.keys(req.body);
+        await client.query(`update users set user_name = '${name}' where user_id = '${req.headers.userID}'`);
 
-        await client.query("BEGIN");
-
-        for (const updatekey of updatekeys) {
-            const query = 'update users set user_' + updatekey + ' = $1 where user_id = $2';
-            await client.query(query, [req.body[updatekey], req.headers.userID]);
-        }
-
-        await client.query("COMMIT");
-        return res.status(200).send("Profile Updated");
-        
+        return res.status(200).send("Profile Updated");  
     } catch (e) {
+        console.log(e);
         return res.status(400).send("Update Failed")
     }
 })
