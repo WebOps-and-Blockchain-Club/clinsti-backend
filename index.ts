@@ -64,10 +64,12 @@ client.connect()
     `);
 
     await client.query(`CREATE TABLE IF NOT EXISTS feedback(
+        user_id uuid not null,
         feedback_id serial primary key,
         created_time timestamp with time zone not null,
         feedback text NOT NULL,
-        feedback_type text NOT NULL
+        feedback_type text NOT NULL,
+	      foreign key (user_id) references users(user_id)
       );
     `);
 
