@@ -1,12 +1,14 @@
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
+import dotenv from "dotenv";
 
+dotenv.config();
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
-const USER = process.env.USER;
+//const USER = process.env.USER;
 
 const oAuth2Client = new google.auth.OAuth2(
     CLIENT_ID,
@@ -25,7 +27,7 @@ export const mail = async ({ email, subject, htmlContent } : { email: string, su
                 service: "gmail",
                 auth: {
                     type: 'OAuth2',
-                    user: USER,
+                    user: "clinsti@smail.iitm.ac.in",
                     clientId: CLIENT_ID,
                     clientSecret: CLIENT_SECRET,
                     refreshToken: REFRESH_TOKEN,
@@ -35,7 +37,7 @@ export const mail = async ({ email, subject, htmlContent } : { email: string, su
     
             const mailOptions = {
                 from: 'clinsti@smail.iitm.ac.in',
-                fromName: 'Clinsti',
+                fromName: 'Clinsti, IIT Madras',
                 to: email,
                 subject: subject,
                 html: htmlContent

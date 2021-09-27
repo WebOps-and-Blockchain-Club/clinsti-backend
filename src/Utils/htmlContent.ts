@@ -509,7 +509,7 @@ const verificationMailContent = (name: string, link: string) => {
                                           text-align: left;
                                         "
                                       >
-                                        Or click on the below link to continue:
+                                        Or click on the below link to continue: ${link}
                                       </p>
                                       <p
                                         dir="ltr"

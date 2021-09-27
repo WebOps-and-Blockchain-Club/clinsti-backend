@@ -33,8 +33,8 @@ router.post('/client/accounts/signup', isSignUPValid, async (req, res) => {
 
         const userjwtToken = jwtToken(registeredUser.rows[0].user_id, registeredUser.rows[0].user_password);
         const token = jwt.sign({_id: registeredUser.rows[0].user_id, _password_id: registeredUser.rows[0].user_verification_uuid}, process.env.jwtSecret, { expiresIn: '2h'})
-        const htmlContent = verificationMailContent( registeredUser.rows[0].name, `https://cfi.iitm.ac.in/clinsti/${token}` );
-        await mail({email: registeredUser.rows[0].email, subject: "Verify your email address || CLinsti", htmlContent });
+        const htmlContent = verificationMailContent( registeredUser.rows[0].user_name, `https://cfi.iitm.ac.in/clinsti/verify/${token}` );
+        await mail({email: registeredUser.rows[0].user_email, subject: "Verify your email address || CLinsti", htmlContent });
 
         return res.status(201).send({name, userjwtToken, "isVerified": false});
     } catch (e) {
@@ -45,7 +45,7 @@ router.post('/client/accounts/signup', isSignUPValid, async (req, res) => {
 router.patch('/client/accounts/verify/:token', async ( req, res) => {
     try {
         const decoded = jwt.verify(req.params.token, process.env.jwtSecret);
-        const user = await client.query(`SELECT * from users WHERE user_id = '${decoded._id}' AND user_verification_uuid = '${decoded._password}'`);
+        const user = await client.query(`SELECT * from users WHERE user_id = '${decoded._id}' AND user_verification_uuid = '${decoded._password_id}'`);
         if( user.rowCount === 1 ) {
             if(user.rows[0].user_verified === true) return res.status(208).send("User has been verified already.")
             await client.query(`UPDATE users SET user_verified = '1' WHERE user_id = '${decoded._id}'`);
@@ -68,8 +68,8 @@ router.get('/client/accounts/resend-verification-mail', async ( req, res) => {
             if(user.rows[0].user_verified === true) return res.status(401).send("User has been verified already.");
             
             const token = jwt.sign({_id: user.rows[0].user_id, _password_id: user.rows[0].user_verification_uuid}, process.env.jwtSecret, { expiresIn: '2h'});
-            const htmlContent = verificationMailContent( user.rows[0].name, `https://cfi.iitm.ac.in/clinsti/${token}` );
-            await mail({email: user.rows[0].email, subject: "Verify your email address || CLinsti", htmlContent });
+            const htmlContent = verificationMailContent( user.rows[0].user_name, `https://cfi.iitm.ac.in/clinsti/verify/${token}` );
+            await mail({email: user.rows[0].user_email, subject: "Verify your email address || CLinsti", htmlContent });
 
             return res.status(200).send({"message" : "Verification mail sent!"});
         } else return res.status(401).send("Invalid credentials");
