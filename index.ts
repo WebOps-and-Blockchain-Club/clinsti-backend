@@ -30,6 +30,8 @@ client.connect()
       user_email VARCHAR(255) NOT NULL UNIQUE,
       user_password VARCHAR(255) NOT NULL,
       password_otp VARCHAR(10),
+      user_verified BOOLEAN DEFAULT '0' NOT NULL,
+      user_verification_uuid uuid DEFAULT uuid_generate_v4() UNIQUE,
       PRIMARY KEY(user_id)
       );
     `);

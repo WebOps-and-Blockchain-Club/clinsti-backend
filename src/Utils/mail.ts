@@ -6,6 +6,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI;
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+const USER = process.env.USER;
 
 const oAuth2Client = new google.auth.OAuth2(
     CLIENT_ID,
@@ -15,7 +16,7 @@ const oAuth2Client = new google.auth.OAuth2(
 
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN});
 
-export const mail = async ({ name, email, otp } : { name: string, email: string, otp: string }) => {
+export const mail = async ({ email, subject, htmlContent } : { email: string, subject: string, htmlContent: string }) => {
     const sendMail = async () => {
         try {
             const accessToken = await oAuth2Client.getAccessToken();
@@ -24,7 +25,7 @@ export const mail = async ({ name, email, otp } : { name: string, email: string,
                 service: "gmail",
                 auth: {
                     type: 'OAuth2',
-                    user: 'clinsti2021@gmail.com',
+                    user: USER,
                     clientId: CLIENT_ID,
                     clientSecret: CLIENT_SECRET,
                     refreshToken: REFRESH_TOKEN,
@@ -33,12 +34,11 @@ export const mail = async ({ name, email, otp } : { name: string, email: string,
             }  as SMTPTransport.Options);
     
             const mailOptions = {
-                from: 'clinsti2021@gmail.com',
+                from: 'clinsti@smail.iitm.ac.in',
                 fromName: 'Clinsti',
                 to: email,
-                subject: 'IIT Madras || CLinsti',
-                text: `Hey ${name}!, Your OTP: ${otp}`,
-                html: `<h1>Hey ${name}!</h1><p>Your OTP: <b>${otp}</b></p><p>Regards,</p><p>CLisnti team</p>`
+                subject: subject,
+                html: htmlContent
             };
             const result = await transport.sendMail(mailOptions);
             return result;

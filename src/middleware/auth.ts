@@ -12,6 +12,7 @@ const auth = async (req: any, res: any, next: any) => {
     const user = await client.query('select * from users where user_id = $1 and user_password = $2', [decoded._id, decoded._password]);
     if (user) {
         req.headers.userID = user.rows[0].user_id;
+        if(user.rows[0].user_verified === false) return res.status(400).send("User Not Verified")
         next();
         }
     } catch (e) {
